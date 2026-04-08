@@ -1,28 +1,43 @@
 body {
+    margin: 0;
+    font-family: Arial;
     background: #0f172a;
     color: white;
-    font-family: Arial;
 }
 
+/* CENTRAR LOGIN */
 .center {
-    text-align: center;
-    margin-top: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+/* OCULTAR */
+.oculto {
+    display: none;
 }
 
 input {
-    display: block;
-    margin: 10px auto;
+    margin: 10px;
     padding: 10px;
+    width: 200px;
 }
 
 button {
-    padding: 10px;
     margin: 5px;
+    padding: 10px;
     background: #22c55e;
     border: none;
+    cursor: pointer;
 }
 
 nav {
     background: black;
     padding: 10px;
+}
+
+#contenido {
+    padding: 20px;
 }
