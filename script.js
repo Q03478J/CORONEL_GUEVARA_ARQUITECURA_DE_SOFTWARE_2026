@@ -1,4 +1,3 @@
-// ADMIN
 const admin = {
     user: "admin",
     pass: "123"
@@ -12,7 +11,7 @@ function login() {
     if (user === admin.user && pass === admin.pass) {
         entrarSistema("ADMIN");
     } else {
-        alert("Usuario no válido (aún sin DB)");
+        alert("Datos incorrectos");
     }
 }
 
@@ -23,9 +22,9 @@ function modoInvitado() {
 
 // ENTRAR
 function entrarSistema(tipo) {
-    document.getElementById("pantallaLogin").style.display = "none";
-    document.getElementById("registro").style.display = "none";
-    document.getElementById("panel").style.display = "block";
+    document.getElementById("pantallaLogin").classList.add("oculto");
+    document.getElementById("registro").classList.add("oculto");
+    document.getElementById("panel").classList.remove("oculto");
 
     document.getElementById("contenido").innerHTML =
         "<h2>Bienvenido " + tipo + "</h2>";
@@ -33,13 +32,19 @@ function entrarSistema(tipo) {
 
 // MOSTRAR REGISTRO
 function mostrarRegistro() {
-    document.getElementById("pantallaLogin").style.display = "none";
-    document.getElementById("registro").style.display = "block";
+    document.getElementById("pantallaLogin").classList.add("oculto");
+    document.getElementById("registro").classList.remove("oculto");
 }
 
-// REGISTRO (TEMPORAL)
+// VOLVER LOGIN
+function volverLogin() {
+    document.getElementById("registro").classList.add("oculto");
+    document.getElementById("pantallaLogin").classList.remove("oculto");
+}
+
+// REGISTRAR
 function registrar() {
-    alert("Registro listo (falta conectar base de datos)");
+    alert("Registro funcionando (falta base de datos)");
 }
 
 // CONTENIDO
