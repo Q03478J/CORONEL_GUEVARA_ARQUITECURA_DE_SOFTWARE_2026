@@ -33,11 +33,24 @@
 </div>
 
 <!-- 🔐 LOGIN OCULTO -->
+<!-- 🔐 LOGIN -->
 <div id="login" class="login-box" style="display:none;">
     <h2>Login</h2>
-    <input type="text" id="user" placeholder="Usuario">
-    <input type="password" id="pass" placeholder="Contraseña">
+    <input type="text" id="loginUser" placeholder="Usuario">
+    <input type="password" id="loginPass" placeholder="Contraseña">
+
     <button onclick="login()">Ingresar</button>
+    <button onclick="mostrarRegistro()">Registrarse</button>
+    <button onclick="modoInvitado()">Entrar como invitado</button>
+</div>
+
+<!-- 📝 REGISTRO -->
+<div id="registro" class="login-box" style="display:none;">
+    <h2>Registro</h2>
+    <input type="text" id="regUser" placeholder="Nuevo usuario">
+    <input type="password" id="regPass" placeholder="Contraseña">
+
+    <button onclick="registrar()">Crear cuenta</button>
 </div>
 
 <script src="script.js"></script>
