@@ -1,49 +1,324 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Arquitectura de Software</title>
-<link rel="stylesheet" href="styles.css">
+<html lang="es" data-theme="light"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Curso de Arquitectura de Software - Vista General">
+    <title>Arquitectura de Software | ERY CURSOS</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Poppins:wght@600;700;800&amp;display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/chatbox.css">
 </head>
 
 <body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar" style="box-shadow: none;">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1 class="logo">ERY<span class="logo-accent">_CURSOS</span></h1>
+            </div>
 
-<!-- 🔐 LOGIN -->
-<div id="pantallaLogin" class="center">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Universidad_Peruana_Los_Andes_logo.png" width="120">
-    <h1>Arquitectura de Software</h1>
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
 
-    <input type="text" id="user" placeholder="Usuario">
-    <input type="password" id="pass" placeholder="Contraseña">
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="nav-link">Inicio</a></li>
+                <li><a href="courses.html" class="nav-link active">ARQUITECTURA SW</a></li>
+                <li><a href="unidad1.html" class="nav-link">UNIDAD I</a></li>
+                <li><a href="unidad2.html" class="nav-link">UNIDAD II</a></li>
+                <li><a href="unidad3.html" class="nav-link">UNIDAD III</a></li>
+                <li><a href="unidad4.html" class="nav-link">UNIDAD IV</a></li>
+                <li><a href="contact.html" class="nav-link">Contáctenos</a></li>
+                <li><a href="login.html" class="nav-link btn-login">Iniciar sesión</a></li>
+            </ul>
 
-    <button onclick="login()">Ingresar</button>
-    <button onclick="mostrarRegistro()">Registrarse</button>
-    <button onclick="modoInvitado()">Invitado</button>
-</div>
-
-<!-- 📝 REGISTRO -->
-<div id="registro" class="center oculto">
-    <h2>Registro</h2>
-    <input type="text" id="newUser" placeholder="Usuario">
-    <input type="password" id="newPass" placeholder="Contraseña">
-    <button onclick="registrar()">Crear cuenta</button>
-    <button onclick="volverLogin()">Volver</button>
-</div>
-
-<!-- 🧭 PANEL -->
-<div id="panel" class="oculto">
-
-    <nav>
-        <h2>Menú</h2>
-        <button onclick="inicio()">Inicio</button>
-        <button onclick="verSemana(1)">Semana 1</button>
-        <button onclick="verSemana(2)">Semana 2</button>
-        <button onclick="verSemana(3)">Semana 3</button>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="2"></circle>
+                        <path d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14. 243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                    </svg>
+                    <svg class="moon-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+                    </svg>
+                </button>
+                <img src="images/upla.png" alt="UPLA Logo" class="upla-logo" onerror="this.style.display='none'">
+            </div>
+        </div>
     </nav>
 
-    <div id="contenido"></div>
-</div>
+    <!-- Course Hero -->
+    <section style="padding-top: 120px; padding-bottom: var(--spacing-3xl); background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));">
+        <div class="container">
+            <div style="max-width: 900px; margin: 0 auto; text-align: center; color: white;">
+                <span class="badge badge-primary" style="margin-bottom: var(--spacing-md); background: rgba(255, 255, 255, 0.2);">CURSO
+                    COMPLETO</span>
+                <h1 class="hero-title animate-fade-in" style="color: white;">
+                    Arquitectura de Software
+                </h1>
+                <p class="hero-subtitle animate-fade-in animation-delay-1" style="color: rgba(255, 255, 255, 0.9);">
+                    Domina los fundamentos y técnicas avanzadas para diseñar sistemas robustos y escalables
+                </p>
 
-<script src="script.js"></script>
-</body>
-</html>
+                <div class="hero-stats animate-fade-in animation-delay-2" style="margin-top: var(--spacing-2xl);">
+                    <div class="stat-card animate-fade-in-scale" style="background: rgba(255, 255, 255, 0.15); border: none; animation-delay: 0s;">
+                        <div class="stat-number" style="-webkit-text-fill-color: white;">4</div>
+                        <div class="stat-label" style="color: rgba(255, 255, 255, 0.9);">Unidades</div>
+                    </div>
+                    <div class="stat-card animate-fade-in-scale" style="background: rgba(255, 255, 255, 0.15); border: none; animation-delay: 0.1s;">
+                        <div class="stat-number" style="-webkit-text-fill-color: white;">16</div>
+                        <div class="stat-label" style="color: rgba(255, 255, 255, 0.9);">Semanas</div>
+                    </div>
+                    <div class="stat-card animate-fade-in-scale" style="background: rgba(255, 255, 255, 0.15); border: none; animation-delay: 0.2s;">
+                        <div class="stat-number" style="-webkit-text-fill-color: white;">Online</div>
+                        <div class="stat-label" style="color: rgba(255, 255, 255, 0.9);">100% Virtual</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Overview -->
+    <section class="container" style="padding: var(--spacing-3xl) var(--spacing-lg);">
+        <div class="card" style="max-width: 1000px; margin: 0 auto;">
+            <div class="card-header">
+                <h2 class="card-title">Tu Progreso General</h2>
+                <p class="card-description">Completa todas las unidades para dominar la arquitectura de software</p>
+            </div>
+            <div class="card-body">
+                <div class="progress-label">
+                    <span>Progreso del curso</span>
+                    <span id="overall-progress-text">[object Promise]%</span>
+                </div>
+                <div class="progress" style="height: 12px;">
+                    <div class="progress-bar" id="overall-progress-bar" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Units Grid -->
+    <section class="container" style="padding: 0 var(--spacing-lg) var(--spacing-4xl);">
+        <div class="units-grid" style="max-width: 1200px; margin: 0 auto;">
+
+            <!-- Unidad I -->
+            <a href="unidad1.html" class="unit-card animate-fade-in" style="animation-delay: 0s;">
+                <div class="unit-icon" style="background: linear-gradient(135deg, var(--color-primary), var(--color-accent));">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect x="8" y="8" width="24" height="24" rx="4" stroke="currentColor" stroke-width="2"></rect>
+                        <path d="M16 20L18 22L24 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </div>
+                <div class="unit-content">
+                    <h3 class="unit-title">UNIDAD I</h3>
+                    <p class="unit-description">Fundamentos de Arquitectura de Software</p>
+                    <div class="unit-meta">
+                        <span class="unit-lessons">4 Semanas</span>
+                        <span class="unit-progress">0% completado</span>
+                    </div>
+                    <ul style="margin-top: var(--spacing-sm); font-size: var(--font-size-sm); color: var(--color-text-tertiary); list-style: none; padding: 0;">
+                        <li>✓ Introducción a la arquitectura</li>
+                        <li>✓ Atributos de calidad</li>
+                        <li>✓ Vistas arquitectónicas</li>
+                        <li>✓ Evaluación</li>
+                    </ul>
+                </div>
+                <div class="unit-arrow">→</div>
+            </a>
+
+            <!-- Unidad II -->
+            <a href="unidad2.html" class="unit-card animate-fade-in animation-delay-1" style="animation-delay: 0.1s;">
+                <div class="unit-icon" style="background: linear-gradient(135deg, var(--color-secondary), var(--color-accent-dark));">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect x="8" y="8" width="24" height="24" rx="4" stroke="currentColor" stroke-width="2"></rect>
+                        <path d="M16 16H24M16 20H24M16 24H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                    </svg>
+                </div>
+                <div class="unit-content">
+                    <h3 class="unit-title">UNIDAD II</h3>
+                    <p class="unit-description">Patrones y Estilos Arquitectónicos</p>
+                    <div class="unit-meta">
+                        <span class="unit-lessons">4 Semanas</span>
+                        <span class="unit-progress">0% completado</span>
+                    </div>
+                    <ul style="margin-top: var(--spacing-sm); font-size: var(--font-size-sm); color: var(--color-text-tertiary); list-style: none; padding: 0;">
+                        <li>✓ Patrones fundamentales</li>
+                        <li>✓ Arquitecturas distribuidas</li>
+                        <li>✓ Estilos modernos</li>
+                        <li>✓ Evaluación</li>
+                    </ul>
+                </div>
+                <div class="unit-arrow">→</div>
+            </a>
+
+            <!-- Unidad III -->
+            <a href="unidad3.html" class="unit-card animate-fade-in animation-delay-2" style="animation-delay: 0.2s;">
+                <div class="unit-icon" style="background: linear-gradient(135deg, var(--color-accent), var(--color-primary));">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect x="8" y="8" width="24" height="24" rx="4" stroke="currentColor" stroke-width="2"></rect>
+                        <circle cx="20" cy="16" r="3" stroke="currentColor" stroke-width="2"></circle>
+                        <path d="M12 28C12 24 16 24 20 24C24 24 28 24 28 28" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                    </svg>
+                </div>
+                <div class="unit-content">
+                    <h3 class="unit-title">UNIDAD III</h3>
+                    <p class="unit-description">Diseño y Modelado de Arquitecturas</p>
+                    <div class="unit-meta">
+                        <span class="unit-lessons">4 Semanas</span>
+                        <span class="unit-progress">0% completado</span>
+                    </div>
+                    <ul style="margin-top: var(--spacing-sm); font-size: var(--font-size-sm); color: var(--color-text-tertiary); list-style: none; padding: 0;">
+                        <li>✓ Notaciones y UML</li>
+                        <li>✓ Diseño de componentes</li>
+                        <li>✓ Modelado de datos</li>
+                        <li>✓ Evaluación</li>
+                    </ul>
+                </div>
+                <div class="unit-arrow">→</div>
+            </a>
+
+            <!-- Unidad IV -->
+            <a href="unidad4.html" class="unit-card animate-fade-in animation-delay-3" style="animation-delay: 0.3s;">
+                <div class="unit-icon" style="background: linear-gradient(135deg, var(--color-accent-dark), var(--color-primary-dark));">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect x="8" y="8" width="24" height="24" rx="4" stroke="currentColor" stroke-width="2"></rect>
+                        <path d="M20 14V26M14 20H26" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                    </svg>
+                </div>
+                <div class="unit-content">
+                    <h3 class="unit-title">UNIDAD IV</h3>
+                    <p class="unit-description">Evaluación y Optimización</p>
+                    <div class="unit-meta">
+                        <span class="unit-lessons">4 Semanas</span>
+                        <span class="unit-progress">0% completado</span>
+                    </div>
+                    <ul style="margin-top: var(--spacing-sm); font-size: var(--font-size-sm); color: var(--color-text-tertiary); list-style: none; padding: 0;">
+                        <li>✓ Métodos de evaluación</li>
+                        <li>✓ Performance y escalabilidad</li>
+                        <li>✓ Refactoring arquitectónico</li>
+                        <li>✓ Proyecto final</li>
+                    </ul>
+                </div>
+                <div class="unit-arrow">→</div>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>ERY_CURSOS</h3>
+                    <p>Innovación en sistemas y educación de calidad</p>
+                </div>
+
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Navegación</h4>
+                        <ul>
+                            <li><a href="index.html">Inicio</a></li>
+                            <li><a href="courses.html">Cursos</a></li>
+                            <li><a href="contact.html">Contacto</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-column">
+                        <h4>Unidades</h4>
+                        <ul>
+                            <li><a href="unidad1.html">Unidad I</a></li>
+                            <li><a href="unidad2.html">Unidad II</a></li>
+                            <li><a href="unidad3.html">Unidad III</a></li>
+                            <li><a href="unidad4.html">Unidad IV</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <ul>
+                            <li><a href="#">Términos de servicio</a></li>
+                            <li><a href="#">Política de privacidad</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2025 Edwin Ramirez. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/progress.js"></script>
+    <script src="js/chatbox.js"></script>
+    <script>
+        // Calculate and display overall progress
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.progressTracker) {
+                const overallProgress = window.progressTracker.getOverallProgress();
+                document.getElementById('overall-progress-text').textContent = `${overallProgress}%`;
+                document.getElementById('overall-progress-bar').style.width = `${overallProgress}%`;
+            }
+        });
+    </script>
+
+
+
+            <div class="edw-chatbox" id="edwChatbox">
+                <div class="chat-toggle" id="chatToggle">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M21 11.5C21 16.75 16.75 21 11.5 21C10.39 21 9.33 20.81 8.34 20.46L3 22L4.54 16.66C4.19 15.67 4 14.61 4 13.5C4 8.25 8.25 4 13.5 4C16.73 4 19.55 5.68 21 8.23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        <circle cx="10" cy="12" r="1" fill="currentColor"></circle>
+                        <circle cx="14" cy="12" r="1" fill="currentColor"></circle>
+                        <circle cx="18" cy="12" r="1" fill="currentColor"></circle>
+                    </svg>
+                    <span class="chat-badge">EDW</span>
+                </div>
+
+                <div class="chat-window" id="chatWindow">
+                    <div class="chat-header">
+                        <div class="chat-header-info">
+                            <div class="chat-avatar">
+                                <img src="images/ed.jpg" alt="EDW" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                            </div>
+                            <div>
+                                <h4>EDW BOT</h4>
+                                <span class="chat-status">Online</span>
+                            </div>
+                        </div>
+                        <button class="chat-close" id="chatClose">×</button>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message bot-message">
+                            <div class="message-content">
+                                👋 ¡Hola! Soy EDW, tu asistente virtual. ¿En qué puedo ayudarte hoy?
+                                <div class="quick-replies">
+                                    <button class="quick-reply" data-message="hola">Saludar</button>
+                                    <button class="quick-reply" data-message="ayuda">Ayuda</button>
+                                    <button class="quick-reply" data-message="unidades">Ver Unidades</button>
+                                    <button class="quick-reply" data-message="contacto">Contacto</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-container">
+                        <input type="text" id="chatInput" class="chat-input" placeholder="Escribe tu mensaje...">
+                        <button class="chat-send" id="chatSend">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </body></html>
