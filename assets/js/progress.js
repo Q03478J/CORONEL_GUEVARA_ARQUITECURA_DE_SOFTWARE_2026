@@ -1,6 +1,6 @@
 // ===================================
-// PROGRESS TRACKING SYSTEM - BACKEND DRIVEN
-// PRODUCTION READY - SUPABASE INTEGRATION
+// PROGRESS TRACKING SYSTEM - ERY CURSOS
+// INTEGRACIÓN SUPABASE & UI SYNC
 // ===================================
 
 class ProgressTracker {
@@ -22,20 +22,17 @@ class ProgressTracker {
         this.init();
     }
 
-    // Initialize connection
     async init() {
-        // Get Supabase client
+        // Capturar credenciales de Supabase desde los Meta Tags (asegúrate de tenerlos en el index.html)
         const supabaseUrl = document.querySelector('meta[name="supabase-url"]')?.content;
         const supabaseKey = document.querySelector('meta[name="supabase-key"]')?.content;
 
         if (supabaseUrl && supabaseKey && window.supabase) {
             this.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-            console.log('✓ Progress Tracker: Supabase connected');
-
-            // Wait for auth and load progress
+            console.log('✓ Supabase conectado');
             await this.loadProgressFromDatabase();
         } else {
-            console.warn('⚠️ Progress Tracker: Fallback to localStorage');
+            console.warn('⚠️ Fallback a localStorage (Modo Offline)');
             this.loadProgressFromStorage();
         }
 
@@ -43,462 +40,178 @@ class ProgressTracker {
         this.updateUI();
     }
 
-    // Load progress from Supabase database (BACKEND-DRIVEN)
+    // --- CARGA DE DATOS ---
     async loadProgressFromDatabase() {
         try {
-            // Wait for auth manager
             await this.waitForAuth();
-
             if (!window.authManager || !window.authManager.isAuthenticated()) {
-                console.log('Not authenticated, using localStorage');
                 this.loadProgressFromStorage();
                 return;
             }
 
             const profile = window.authManager.getProfile();
-            if (!profile) {
-                this.loadProgressFromStorage();
-                return;
-            }
-
             this.currentUserId = profile.id;
 
-            // Use database function to calculate progress
             for (const unitKey in this.unitMap) {
                 const unitId = this.unitMap[unitKey];
-                const progress = await this.calculateUnitProgressFromDB(this.currentUserId, unitId);
+                
+                // RPC: Llama a una función de base de datos para obtener el %
+                const { data: progressData } = await this.supabaseClient.rpc('calculate_unit_progress', {
+                    p_user_id: this.currentUserId,
+                    p_unit_id: unitId
+                });
 
-                // Get completed assignments
-                const completed = await this.getCompletedAssignments(this.currentUserId, unitId);
+                // Obtener IDs específicos de lecciones completadas
+                const { data: completedData } = await this.supabaseClient
+                    .from('progress_tracking')
+                    .select('assignment_key')
+                    .eq('user_id', this.currentUserId)
+                    .eq('unit_id', unitId)
+                    .eq('completed', true);
 
                 this.progress[unitKey] = {
-                    completed: completed,
-                    progress: progress,
+                    completed: completedData?.map(d => d.assignment_key) || [],
+                    progress: Math.min(Math.max(Math.round(progressData || 0), 0), 100),
                     total: 4
                 };
             }
-
-            console.log('✓ Progress loaded from database:', this.progress);
             this.updateUI();
         } catch (error) {
-            console.error('Failed to load progress from database:', error);
+            console.error('Error cargando desde DB:', error);
             this.loadProgressFromStorage();
         }
     }
 
-    // Wait for auth manager to be ready
-    async waitForAuth() {
-        let attempts = 0;
-        while (!window.authManager && attempts < 50) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-        }
-    }
+    // --- LÓGICA DE COMPLETADO ---
+    async toggleLesson(unit, lessonId) {
+        const isCurrentlyCompleted = this.isCompleted(unit, lessonId);
+        const newState = !isCurrentlyCompleted;
 
-    // Calculate unit progress using database function
-    async calculateUnitProgressFromDB(userId, unitId) {
         try {
-            const { data, error } = await this.supabaseClient
-                .rpc('calculate_unit_progress', {
-                    p_user_id: userId,
-                    p_unit_id: unitId
-                });
+            if (this.currentUserId) {
+                // Actualizar en Supabase
+                await this.supabaseClient
+                    .from('progress_tracking')
+                    .upsert({
+                        user_id: this.currentUserId,
+                        unit_id: this.unitMap[unit],
+                        assignment_key: lessonId,
+                        completed: newState,
+                        updated_at: new Date().toISOString()
+                    });
+            }
 
-            if (error) throw error;
+            // Actualizar estado local
+            if (newState) {
+                if (!this.progress[unit].completed.includes(lessonId)) {
+                    this.progress[unit].completed.push(lessonId);
+                }
+            } else {
+                this.progress[unit].completed = this.progress[unit].completed.filter(id => id !== lessonId);
+            }
 
-            // Ensure progress is between 0 and 100, rounded to integer
-            const progress = Math.min(Math.max(Math.round(data), 0), 100);
+            // Recalcular % localmente para respuesta inmediata
+            const count = this.progress[unit].completed.length;
+            this.progress[unit].progress = Math.round((count / this.progress[unit].total) * 100);
 
-            console.log(`Unit ${unitId} progress: ${progress}%`);
-            return progress;
+            this.saveToStorage();
+            this.updateUI();
+            
+            // Notificación visual
+            this.notify(newState ? '¡Lección completada! 🎉' : 'Lección pendiente', newState ? 'success' : 'info');
+
+            return true;
         } catch (error) {
-            console.error(`Error calculating progress for unit ${unitId}:`, error);
-            return 0;
+            console.error('Error al cambiar estado de lección:', error);
+            return false;
         }
     }
 
-    // Get completed assignments for a unit
-    async getCompletedAssignments(userId, unitId) {
-        try {
-            const { data, error } = await this.supabaseClient
-                .from('progress_tracking')
-                .select('assignment_id, assignments!inner(assignment_key)')
-                .eq('user_id', userId)
-                .eq('unit_id', unitId)
-                .eq('completed', true);
+    // --- ACTUALIZACIÓN DE UI ---
+    updateUI() {
+        // 1. Actualizar textos de porcentaje (ej: unit1-progress-text)
+        Object.keys(this.progress).forEach(unitKey => {
+            const unitNumber = unitKey.replace('unidad', '');
+            const textEl = document.getElementById(`unit${unitNumber}-progress-text`);
+            if (textEl) textEl.textContent = `${this.progress[unitKey].progress}%`;
 
-            if (error) throw error;
+            // 2. Actualizar Barras de Progreso
+            const bar = document.querySelector(`.progress-bar[data-unit="${unitKey}"]`);
+            if (bar) {
+                const p = this.progress[unitKey].progress;
+                bar.style.width = `${p}%`;
+                bar.classList.toggle('progress-complete', p === 100);
+                
+                if (p === 100) this.showTrophyCelebration(unitKey);
+            }
+        });
 
-            // Extract assignment keys (e.g., "semana1", "semana2")
-            const completed = data.map(item => {
-                const key = item.assignments.assignment_key;
-                const match = key.match(/semana(\d+)/);
-                return match ? `semana${match[1]}` : null;
-            }).filter(Boolean);
+        // 3. Sincronizar Checkboxes
+        document.querySelectorAll('.lesson-checkbox').forEach(cb => {
+            const { unit, lessonId } = cb.dataset;
+            if (unit && lessonId) {
+                cb.checked = this.isCompleted(unit, lessonId);
+            }
+        });
+    }
 
-            return completed;
-        } catch (error) {
-            console.error(`Error getting completed assignments for unit ${unitId}:`, error);
-            return [];
+    // --- UTILIDADES ---
+    isCompleted(unit, lessonId) {
+        return this.progress[unit]?.completed.includes(lessonId);
+    }
+
+    notify(msg, type) {
+        if (window.ERY?.utils?.showNotification) {
+            window.ERY.utils.showNotification(msg, type);
         }
     }
 
-    // Load progress from localStorage (fallback)
     loadProgressFromStorage() {
         const stored = localStorage.getItem('ery_course_progress');
-        if (stored) {
-            this.progress = JSON.parse(stored);
-        }
-        console.log('✓ Progress loaded from localStorage');
+        if (stored) this.progress = JSON.parse(stored);
     }
 
-    // Save progress to localStorage (cache)
     saveToStorage() {
         localStorage.setItem('ery_course_progress', JSON.stringify(this.progress));
     }
 
-    // Mark lesson as completed
-    async completeLesson(unit, lessonId) {
-        try {
-            if (!this.currentUserId) {
-                // Fallback to localStorage
-                return this.completeLessonLocally(unit, lessonId);
-            }
-
-            const unitId = this.unitMap[unit];
-            const assignmentKey = `${unit}_${lessonId}`;
-
-            // Get assignment ID
-            const { data: assignment, error: assignmentError } = await this.supabaseClient
-                .from('assignments')
-                .select('id')
-                .eq('assignment_key', assignmentKey)
-                .single();
-
-            if (assignmentError) throw assignmentError;
-
-            // Insert or update progress
-            const { error: progressError } = await this.supabaseClient
-                .from('progress_tracking')
-                .upsert({
-                    user_id: this.currentUserId,
-                    unit_id: unitId,
-                    assignment_id: assignment.id,
-                    completed: true,
-                    completed_at: new Date().toISOString()
-                }, {
-                    onConflict: 'user_id,assignment_id'
-                });
-
-            if (progressError) throw progressError;
-
-            // Recalculate progress from database
-            const newProgress = await this.calculateUnitProgressFromDB(this.currentUserId, unitId);
-            const completed = await this.getCompletedAssignments(this.currentUserId, unitId);
-
-            this.progress[unit].progress = newProgress;
-            this.progress[unit].completed = completed;
-
-            this.saveToStorage();
-            this.updateUI();
-
-            return true;
-        } catch (error) {
-            console.error('Failed to complete lesson:', error);
-            return this.completeLessonLocally(unit, lessonId);
+    async waitForAuth() {
+        let attempts = 0;
+        while (!window.authManager && attempts < 30) {
+            await new Promise(r => setTimeout(r, 100));
+            attempts++;
         }
     }
 
-    // Mark lesson as incomplete
-    async uncompleteLesson(unit, lessonId) {
-        try {
-            if (!this.currentUserId) {
-                return this.uncompleteLessonLocally(unit, lessonId);
-            }
-
-            const unitId = this.unitMap[unit];
-            const assignmentKey = `${unit}_${lessonId}`;
-
-            // Get assignment ID
-            const { data: assignment, error: assignmentError } = await this.supabaseClient
-                .from('assignments')
-                .select('id')
-                .eq('assignment_key', assignmentKey)
-                .single();
-
-            if (assignmentError) throw assignmentError;
-
-            // Update progress to not completed
-            const { error: progressError } = await this.supabaseClient
-                .from('progress_tracking')
-                .upsert({
-                    user_id: this.currentUserId,
-                    unit_id: unitId,
-                    assignment_id: assignment.id,
-                    completed: false,
-                    completed_at: null
-                }, {
-                    onConflict: 'user_id,assignment_id'
-                });
-
-            if (progressError) throw progressError;
-
-            // Recalculate progress from database
-            const newProgress = await this.calculateUnitProgressFromDB(this.currentUserId, unitId);
-            const completed = await this.getCompletedAssignments(this.currentUserId, unitId);
-
-            this.progress[unit].progress = newProgress;
-            this.progress[unit].completed = completed;
-
-            this.saveToStorage();
-            this.updateUI();
-
-            return true;
-        } catch (error) {
-            console.error('Failed to uncomplete lesson:', error);
-            return this.uncompleteLessonLocally(unit, lessonId);
-        }
-    }
-
-    // Local completion (fallback)
-    completeLessonLocally(unit, lessonId) {
-        if (!this.progress[unit].completed.includes(lessonId)) {
-            this.progress[unit].completed.push(lessonId);
-
-            // Calculate progress: (completed / total) * 100
-            const completedCount = this.progress[unit].completed.length;
-            const total = this.progress[unit].total;
-            const progressPercent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
-
-            // Ensure not over 100%
-            this.progress[unit].progress = Math.min(progressPercent, 100);
-
-            this.saveToStorage();
-            this.updateUI();
-            return true;
-        }
-        return false;
-    }
-
-    // Local uncompletion (fallback)
-    uncompleteLessonLocally(unit, lessonId) {
-        const index = this.progress[unit].completed.indexOf(lessonId);
-        if (index > -1) {
-            this.progress[unit].completed.splice(index, 1);
-
-            // Calculate progress: (completed / total) * 100
-            const completedCount = this.progress[unit].completed.length;
-            const total = this.progress[unit].total;
-            const progressPercent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
-
-            this.progress[unit].progress = Math.min(progressPercent, 100);
-
-            this.saveToStorage();
-            this.updateUI();
-            return true;
-        }
-        return false;
-    }
-
-    // Toggle lesson completion
-    async toggleLesson(unit, lessonId) {
-        if (this.isCompleted(unit, lessonId)) {
-            return await this.uncompleteLesson(unit, lessonId);
-        } else {
-            return await this.completeLesson(unit, lessonId);
-        }
-    }
-
-    // Check if lesson is completed
-    isCompleted(unit, lessonId) {
-        return this.progress[unit].completed.includes(lessonId);
-    }
-
-    // Get unit progress
-    getUnitProgress(unit) {
-        return this.progress[unit];
-    }
-
-    // Get overall progress
-    async getOverallProgress() {
-        if (this.currentUserId && this.supabaseClient) {
-            try {
-                const { data, error } = await this.supabaseClient
-                    .rpc('calculate_overall_progress', {
-                        p_user_id: this.currentUserId
-                    });
-
-                if (error) throw error;
-                return Math.min(Math.max(Math.round(data), 0), 100);
-            } catch (error) {
-                console.error('Error calculating overall progress:', error);
-            }
-        }
-
-        // Fallback to local calculation
-        const units = Object.keys(this.progress);
-        const totalProgress = units.reduce((sum, unit) => sum + this.progress[unit].progress, 0);
-        return Math.round(totalProgress / units.length);
-    }
-
-    // Update UI elements
-    updateUI() {
-        // Update progress text elements
-        document.querySelectorAll('[id$="-progress-text"]').forEach(el => {
-            const unitMatch = el.id.match(/unit(\d+)-progress-text/);
-            if (unitMatch) {
-                const unitKey = `unidad${unitMatch[1]}`;
-                const progress = this.progress[unitKey].progress;
-                el.textContent = `${progress}%`;
-            }
-        });
-
-        // Update progress bars - ENSURE EXACT WIDTH
-        document.querySelectorAll('.progress-bar').forEach(bar => {
-            const unit = bar.dataset.unit;
-            if (unit && this.progress[unit]) {
-                const progress = this.progress[unit].progress;
-
-                // Set width to EXACT progress percentage
-                bar.style.width = `${progress}%`;
-
-                // Add completion class if 100%
-                if (progress === 100) {
-                    bar.classList.add('progress-complete');
-
-                    // Show trophy celebration
-                    if (this.progress[unit].completed.length > 0) {
-                        this.showTrophyCelebration(unit);
-                    }
-                } else {
-                    bar.classList.remove('progress-complete');
-                }
-            }
-        });
-
-        // Update checkboxes
-        document.querySelectorAll('.lesson-checkbox').forEach(checkbox => {
-            const unit = checkbox.dataset.unit;
-            const lessonId = checkbox.dataset.lessonId;
-            if (unit && lessonId) {
-                checkbox.checked = this.isCompleted(unit, lessonId);
-            }
-        });
-
-        // Update unit cards
-        document.querySelectorAll('.unit-card').forEach(card => {
-            const unitLink = card.getAttribute('href');
-            if (unitLink) {
-                const unitMatch = unitLink.match(/unidad(\d+)/);
-                if (unitMatch) {
-                    const unitKey = `unidad${unitMatch[1]}`;
-                    const progressEl = card.querySelector('.unit-progress');
-                    if (progressEl) {
-                        const progress = this.progress[unitKey].progress;
-                        progressEl.textContent = `${progress}% completado`;
-
-                        if (progress === 100) {
-                            progressEl.innerHTML = `<span class="badge badge-success">✓ Completado</span>`;
-                        } else if (progress > 0) {
-                            progressEl.innerHTML = `<span class="badge badge-info">${progress}% en progreso</span>`;
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Setup event listeners
     setupEventListeners() {
-        // Listen for lesson completion clicks
-        document.addEventListener('click', async (e) => {
-            const checkbox = e.target.closest('.lesson-checkbox');
-            if (checkbox) {
-                const unit = checkbox.dataset.unit;
-                const lessonId = checkbox.dataset.lessonId;
-                if (unit && lessonId) {
-                    await this.toggleLesson(unit, lessonId);
-
-                    const isCompleted = this.isCompleted(unit, lessonId);
-                    if (window.ERY?.utils?.showNotification) {
-                        if (isCompleted) {
-                            window.ERY.utils.showNotification('¡Lección completada! 🎉', 'success');
-                        } else {
-                            window.ERY.utils.showNotification('Lección marcada como pendiente', 'info');
-                        }
-                    }
-                }
+        document.addEventListener('change', async (e) => {
+            if (e.target.classList.contains('lesson-checkbox')) {
+                const { unit, lessonId } = e.target.dataset;
+                await this.toggleLesson(unit, lessonId);
             }
         });
     }
 
-    // Show trophy celebration at 100%
     showTrophyCelebration(unit) {
-        const celebrationKey = `celebration_${unit}`;
-        if (sessionStorage.getItem(celebrationKey)) {
-            return;
-        }
+        const key = `celebrated_${unit}`;
+        if (sessionStorage.getItem(key)) return;
 
-        const modal = document.createElement('div');
-        modal.className = 'trophy-modal';
-        modal.innerHTML = `
+        const overlay = document.createElement('div');
+        overlay.className = 'trophy-modal show';
+        overlay.innerHTML = `
             <div class="trophy-container">
-                <div class="trophy-content">
-                    <div class="trophy-icon">🏆</div>
-                    <h2 class="trophy-title">¡Felicitaciones!</h2>
-                    <p class="trophy-message">Has completado el 100% de ${unit.toUpperCase().replace('UNIDAD', 'UNIDAD ')}</p>
-                    <button class="btn btn-primary trophy-close">Continuar</button>
-                </div>
-                <div class="confetti"></div>
+                <div class="trophy-icon">🏆</div>
+                <h2>¡Excelente trabajo!</h2>
+                <p>Has completado todos los temas de la ${unit.toUpperCase()}</p>
+                <button class="btn btn-primary" onclick="this.closest('.trophy-modal').remove()">Continuar aprendiendo</button>
             </div>
         `;
-
-        document.body.appendChild(modal);
-        setTimeout(() => modal.classList.add('show'), 10);
-
-        this.createConfetti(modal.querySelector('.confetti'));
-
-        modal.querySelector('.trophy-close').addEventListener('click', () => {
-            modal.classList.remove('show');
-            setTimeout(() => modal.remove(), 300);
-        });
-
-        sessionStorage.setItem(celebrationKey, 'true');
-        this.playSuccessSound();
-    }
-
-    // Create confetti effect
-    createConfetti(container) {
-        const colors = ['#FF7A48', '#0593A2', '#103778', '#E3371E', '#FFD700'];
-        for (let i = 0; i < 50; i++) {
-            const confetti = document.createElement('div');
-            confetti.className = 'confetti-piece';
-            confetti.style.left = Math.random() * 100 + '%';
-            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.animationDelay = Math.random() * 2 + 's';
-            confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            container.appendChild(confetti);
-        }
-    }
-
-    // Play success sound
-    playSuccessSound() {
-        try {
-            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt5qxxHwUthssx');
-            audio.volume = 0.3;
-            audio.play().catch(() => { });
-        } catch (e) {
-            // Silent fail
-        }
+        document.body.appendChild(overlay);
+        sessionStorage.setItem(key, 'true');
     }
 }
 
-// Initialize progress tracker
+// Inicialización
 document.addEventListener('DOMContentLoaded', () => {
     window.progressTracker = new ProgressTracker();
-
-    window.ERY = window.ERY || {};
-    window.ERY.progressTracker = window.progressTracker;
-
-    console.log('✨ Progress Tracker initialized (Backend-driven)');
 });
