@@ -1,1 +1,24 @@
+body {
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+}
 
+input {
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+}
+
+button {
+    margin: 5px;
+    padding: 10px;
+    background: #22c55e;
+    border: none;
+    cursor: pointer;
+}
+
+.semanas {
+    margin-top: 20px;
+}
