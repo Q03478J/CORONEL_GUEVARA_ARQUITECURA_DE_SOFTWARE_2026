@@ -6,34 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Unidad I - Fundamentos de Arquitectura de Software">
 
-    <!--Supabase Configuration-->
     <meta name="supabase-url" content="https://ziawcvjvfpvudzkmtkba.supabase.co">
     <meta name="supabase-key"
         content="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppYXdjdmp2ZnB2dWR6a210a2JhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNDk4ODQsImV4cCI6MjA4MTgyNTg4NH0.tHYQ0Nqui_acDR9LdBMarqg86_HMi6szAqxRABate_o">
 
     <title>UNIDAD I - Fundamentos | ERY CURSOS</title>
 
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap"
         rel="stylesheet">
 
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/animations.css">
-    <link rel="stylesheet" href="css/chatbox.css">
-    <link rel="stylesheet" href="css/fileViewer.css">
-    <link rel="stylesheet" href="css/trophy.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+    <link rel="stylesheet" href="../assets/css/chatbox.css">
+    <link rel="stylesheet" href="../assets/css/fileViewer.css">
+    <link rel="stylesheet" href="../assets/css/trophy.css">
 
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
-    <!-- Navigation (same as index.html) -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
             <div class="nav-brand">
@@ -47,7 +42,7 @@
             </button>
 
             <ul class="nav-menu" id="navMenu">
-                <li><a href="index.html" class="nav-link">Inicio</a></li>
+                <li><a href="../index.html" class="nav-link">Inicio</a></li>
                 <li><a href="courses.html" class="nav-link">ARQUITECTURA SW</a></li>
                 <li><a href="unidad1.html" class="nav-link active">UNIDAD I</a></li>
                 <li><a href="unidad2.html" class="nav-link">UNIDAD II</a></li>
@@ -70,21 +65,19 @@
                             stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
                     </svg>
                 </button>
-                <img src="images/upla.png" alt="UPLA Logo" class="upla-logo" onerror="this.style.display='none'">
+                <img src="../assets/images/upla.png" alt="UPLA Logo" class="upla-logo" onerror="this.style.display='none'">
             </div>
         </div>
     </nav>
 
-    <!-- Breadcrumb -->
     <div class="container" style="padding-top: 100px;">
         <nav class="breadcrumb">
-            <div class="breadcrumb-item"><a href="index.html">Inicio</a></div>
+            <div class="breadcrumb-item"><a href="../index.html">Inicio</a></div>
             <div class="breadcrumb-item"><a href="courses.html">Arquitectura SW</a></div>
             <div class="breadcrumb-item">Unidad I</div>
         </nav>
     </div>
 
-    <!-- Unit Header -->
     <section class="container" style="padding: var(--spacing-3xl) var(--spacing-lg);">
         <div style="max-width: 800px; margin: 0 auto; text-align: center;">
             <h1 class="hero-title" style="font-size: var(--font-size-4xl);">
@@ -104,11 +97,9 @@
         </div>
     </section>
 
-    <!-- Lessons -->
     <section class="container" style="padding: 0 var(--spacing-lg) var(--spacing-4xl);">
         <div style="max-width: 1000px; margin: 0 auto;">
 
-            <!-- Semana 1 -->
             <div class="card animate-fade-in" style="margin-bottom: var(--spacing-xl);">
                 <div class="card-header">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -150,7 +141,6 @@
                 </div>
             </div>
 
-            <!-- Semana 2 -->
             <div class="card animate-fade-in animation-delay-1" style="margin-bottom: var(--spacing-xl);">
                 <div class="card-header">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -192,7 +182,6 @@
                 </div>
             </div>
 
-            <!-- Semana 3 -->
             <div class="card animate-fade-in animation-delay-2" style="margin-bottom: var(--spacing-xl);">
                 <div class="card-header">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -234,7 +223,6 @@
                 </div>
             </div>
 
-            <!-- Semana 4 -->
             <div class="card animate-fade-in animation-delay-3" style="margin-bottom: var(--spacing-xl);">
                 <div class="card-header">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -276,7 +264,6 @@
                 </div>
             </div>
 
-            <!-- Navigation -->
             <div style="display: flex; justify-content: space-between; margin-top: var(--spacing-2xl);">
                 <a href="courses.html" class="btn btn-secondary">← Volver al curso</a>
                 <a href="unidad2.html" class="btn btn-primary">Siguiente unidad →</a>
@@ -284,7 +271,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -297,7 +283,7 @@
                     <div class="footer-column">
                         <h4>Navegación</h4>
                         <ul>
-                            <li><a href="index.html">Inicio</a></li>
+                            <li><a href="../index.html">Inicio</a></li>
                             <li><a href="courses.html">Cursos</a></li>
                             <li><a href="contact.html">Contacto</a></li>
                         </ul>
@@ -324,17 +310,16 @@
             </div>
 
             <div class="footer-bottom">
-                <p>&copy; 2025 Edwin Ramirez. Todos los derechos reservados.</p>
+                <p>&copy; 2026 Edwin Ramirez. Todos los derechos reservados.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script src="js/main.js"></script>
-    <script src="js/progress.js"></script>
-    <script src="js/fileUpload.js"></script>
-    <script src="js/fileViewer.js"></script>
-    <script src="js/chatbox.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/progress.js"></script>
+    <script src="../assets/js/fileUpload.js"></script>
+    <script src="../assets/js/fileViewer.js"></script>
+    <script src="../assets/js/chatbox.js"></script>
 </body>
 
 </html>
