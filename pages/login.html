@@ -97,22 +97,17 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/chatbox.js"></script>
     <script>
-        // Production-ready login with Supabase Auth
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Wait for auth manager
-            while (!window.authManager) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Obtener tus credenciales exactas de los meta tags
+            const supabaseUrl = document.querySelector('meta[name="supabase-url"]').content;
+            const supabaseKey = document.querySelector('meta[name="supabase-key"]').content;
 
-            // Check if already logged in
-            if (window.authManager.isAuthenticated()) {
-                window.authManager.redirectToDashboard();
-                return;
-            }
+            // 2. Inicializar Supabase directamente
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            // Handle login form
+            // 3. Darle vida al botón
             document.getElementById('loginForm').addEventListener('submit', async function (e) {
-                e.preventDefault();
+                e.preventDefault(); // Evita que la página se recargue
 
                 const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
@@ -121,47 +116,32 @@
                 const loginText = document.getElementById('loginText');
                 const loginSpinner = document.getElementById('loginSpinner');
 
-                // Validate inputs
-                if (!email || !password) {
-                    errorMessage.textContent = 'Por favor, ingresa tu correo y contraseña.';
-                    errorMessage.style.display = 'block';
-                    return;
-                }
+                if (!email || !password) return;
 
-                // Show loading
+                // Mostrar el efecto de "cargando..."
                 loginBtn.disabled = true;
                 loginText.style.display = 'none';
                 loginSpinner.style.display = 'inline-block';
                 errorMessage.style.display = 'none';
 
-                try {
-                    // Sign in with Supabase
-                    const result = await window.authManager.signIn(email, password);
+                // 4. Intentar iniciar sesión en tu proyecto CORONEL_GUEVARA
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
 
-                    if (result.success) {
-                        // Success - redirect will happen automatically via auth state change
-                        console.log('✓ Login successful');
-                    } else {
-                        // Show error
-                        errorMessage.textContent = result.error || 'Credenciales inválidas. Verifica tu correo y contraseña.';
-                        errorMessage.style.display = 'block';
-
-                        loginBtn.disabled = false;
-                        loginText.style.display = 'inline';
-                        loginSpinner.style.display = 'none';
-                    }
-                } catch (error) {
-                    console.error('Login error:', error);
-                    errorMessage.textContent = 'Error al iniciar sesión. Intenta nuevamente.';
+                if (error) {
+                    // Si falla, mostramos el mensaje de error en pantalla
+                    errorMessage.textContent = 'Credenciales inválidas. Verifica tu correo y contraseña.';
                     errorMessage.style.display = 'block';
-
+                    
                     loginBtn.disabled = false;
                     loginText.style.display = 'inline';
                     loginSpinner.style.display = 'none';
+                } else {
+                    // ¡Éxito! Redirigimos a la portada o unidad
+                    window.location.href = '../index.html'; 
                 }
             });
         });
     </script>
-</body>
-
-</html>
