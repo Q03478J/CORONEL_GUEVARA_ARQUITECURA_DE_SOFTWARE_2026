@@ -19,9 +19,39 @@
     <link rel="stylesheet" href="assets/css/components.css">
     <link rel="stylesheet" href="assets/css/animations.css">
     <link rel="stylesheet" href="assets/css/chatbox.css">
+
+    <style>
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+            background-color: #050505; /* Fondo oscuro elegante */
+        }
+        
+        .hero {
+            background: transparent !important;
+        }
+        
+        /* Ocultamos los círculos de degradado anteriores para que se vea el 3D */
+        .hero-background {
+            display: none !important; 
+        }
+
+        /* Aseguramos que el contenido de abajo tape el fondo 3D al bajar */
+        .units-preview, .footer {
+            position: relative;
+            z-index: 1;
+            background-color: var(--color-bg); /* Usa tu variable de color actual */
+        }
+    </style>
 </head>
 
 <body>
+    <div id="canvas-container"></div>
+
     <nav class="navbar" id="navbar">
         <div class="nav-container">
             <div class="nav-brand">
@@ -234,6 +264,57 @@
     <script src="assets/js/progress.js"></script>
     <script src="assets/js/notifications.js"></script>
     <script src="assets/js/main.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        // Alpha true permite que el canvas sea transparente si queremos, 
+        // pero hemos definido un color oscuro en el CSS
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+
+        // Crear una esfera con estilo malla (wireframe)
+        const geometry = new THREE.IcosahedronGeometry(2.5, 3);
+        const material = new THREE.MeshNormalMaterial({ wireframe: true });
+        const sphere = new THREE.Mesh(geometry, material);
+        scene.add(sphere);
+
+        // Posicionar la cámara
+        camera.position.z = 6;
+
+        // Variables para la posición del mouse
+        let mouseX = 0;
+        let mouseY = 0;
+
+        // Escuchar el movimiento del mouse
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX - window.innerWidth / 2) / 100;
+            mouseY = (e.clientY - window.innerHeight / 2) / 100;
+        });
+
+        // Función de animación (Se ejecuta en cada frame)
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotación base constante + la influencia del mouse
+            sphere.rotation.x += 0.002 + (mouseY * 0.02);
+            sphere.rotation.y += 0.002 + (mouseX * 0.02);
+            
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Hacer que el canvas sea responsivo si cambian el tamaño de la ventana
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 
 </html>
