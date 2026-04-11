@@ -28,29 +28,47 @@
             width: 100%;
             height: 100vh;
             z-index: -1;
-            background-color: #050505; /* Fondo oscuro elegante */
+            background-color: #000000; /* Negro absoluto para máximo contraste */
+            overflow: hidden;
         }
         
+        /* Ajustes para que el Hero sea transparente */
         .hero {
             background: transparent !important;
+            position: relative;
         }
         
-        /* Ocultamos los círculos de degradado anteriores para que se vea el 3D */
+        /* Ocultamos los orbes de degradado antiguos */
         .hero-background {
             display: none !important; 
         }
 
-        /* Aseguramos que el contenido de abajo tape el fondo 3D al bajar */
+        /* Aseguramos que el contenido inferior tape el fondo al bajar */
         .units-preview, .footer {
             position: relative;
             z-index: 1;
-            background-color: var(--color-bg); /* Usa tu variable de color actual */
+            background-color: var(--color-bg, #0a0a0a); /* Fondo sólido para el portafolio */
+            box-shadow: 0 -20px 50px rgba(0,0,0,0.8);
+        }
+
+        /* Estilo para el texto del Hero para que resalte sobre el fondo negro */
+        .hero-title, .hero-subtitle, .stat-number, .stat-label {
+            color: #ffffff !important;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #00ff88, #0071e3); /* Verde neón a azul Apple */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
     </style>
 </head>
 
 <body>
-    <div id="canvas-container"></div>
+    <div id="canvas-container">
+        <canvas id="neuralCanvas"></canvas>
+    </div>
 
     <nav class="navbar" id="navbar">
         <div class="nav-container">
@@ -265,54 +283,69 @@
     <script src="assets/js/notifications.js"></script>
     <script src="assets/js/main.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        
-        // Alpha true permite que el canvas sea transparente si queremos, 
-        // pero hemos definido un color oscuro en el CSS
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        container.appendChild(renderer.domElement);
+        const canvas = document.getElementById('neuralCanvas');
+        const ctx = canvas.getContext('2d');
 
-        // Crear una esfera con estilo malla (wireframe)
-        const geometry = new THREE.IcosahedronGeometry(2.5, 3);
-        const material = new THREE.MeshNormalMaterial({ wireframe: true });
-        const sphere = new THREE.Mesh(geometry, material);
-        scene.add(sphere);
+        // Ajustar el canvas al tamaño de la pantalla
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        // Posicionar la cámara
-        camera.position.z = 6;
+        // Caracteres a usar (Binario para estilo neuronal/Matrix moderno)
+        const characters = "01"; 
+        const fontSize = 16;
+        const columns = canvas.width / fontSize; // Número de columnas para la lluvia
 
-        // Variables para la posición del mouse
-        let mouseX = 0;
-        let mouseY = 0;
-
-        // Escuchar el movimiento del mouse
-        document.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX - window.innerWidth / 2) / 100;
-            mouseY = (e.clientY - window.innerHeight / 2) / 100;
-        });
-
-        // Función de animación (Se ejecuta en cada frame)
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            // Rotación base constante + la influencia del mouse
-            sphere.rotation.x += 0.002 + (mouseY * 0.02);
-            sphere.rotation.y += 0.002 + (mouseX * 0.02);
-            
-            renderer.render(scene, camera);
+        // Arreglo para guardar la posición Y de cada columna
+        const drops = [];
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1; // Inicializar en la parte superior
         }
-        animate();
 
-        // Hacer que el canvas sea responsivo si cambian el tamaño de la ventana
+        // Función para dibujar la lluvia de datos
+        function draw() {
+            // Fondo traslúcido para crear el efecto de "estela" o rastro
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Estilo del texto (Verde neón cian para que combine con Apple)
+            ctx.fillStyle = "#0f0"; // Verde base Matrix
+            //ctx.fillStyle = "#00f0ff"; // Descomenta esta línea si prefieres un azul cian neón
+            
+            ctx.font = fontSize + "px 'Inter', sans-serif";
+
+            // Dibujar los caracteres
+            for (let i = 0; i < drops.length; i++) {
+                // Elegir un carácter aleatorio (0 o 1)
+                const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                
+                // Dibujar el carácter en la posición (X, Y)
+                // X es la columna * tamaño de fuente, Y es drops[i] * tamaño de fuente
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // Resetear la gota al inicio si llega al final de la pantalla
+                // Añadimos un factor aleatorio para que no todas reseteen a la vez
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+
+                // Mover la gota hacia abajo
+                drops[i]++;
+            }
+        }
+
+        // Ejecutar la animación (aprox 30 frames por segundo para que no distraiga demasiado)
+        setInterval(draw, 35);
+
+        // Ajustar el canvas si se cambia el tamaño de la ventana
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            // Recalcular columnas si cambia el ancho
+            const columnsNew = canvas.width / fontSize;
+            for (let x = drops.length; x < columnsNew; x++) {
+                drops[x] = 1;
+            }
         });
     </script>
 </body>
