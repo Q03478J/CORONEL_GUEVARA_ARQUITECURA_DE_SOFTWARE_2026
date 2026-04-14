@@ -16,7 +16,6 @@ class FileUploadManager {
     async init() {
         this.initSupabase();
 
-        // Cargar archivos: Prioridad Supabase, Fallback LocalStorage
         if (this.supabaseClient) {
             await this.loadFilesFromSupabase();
         } else {
@@ -30,14 +29,15 @@ class FileUploadManager {
     initSupabase() {
         if (this.supabaseUrl && this.supabaseKey && window.supabase) {
             this.supabaseClient = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
+            console.log('✅ Supabase conectado correctamente');
             return true;
         }
+        console.error('❌ Supabase no pudo inicializarse');
         return false;
     }
 
     async loadFilesFromSupabase() {
         try {
-            // Intentamos traer los registros de la tabla 'files'
             const { data, error } = await this.supabaseClient
                 .from('files')
                 .select('*')
@@ -45,7 +45,7 @@ class FileUploadManager {
 
             if (error) throw error;
             this.uploadedFiles = data || [];
-            this.saveToStorage(); 
+            this.saveToStorage();
         } catch (error) {
             console.error('Error cargando archivos:', error);
             this.uploadedFiles = this.loadFromStorage();
@@ -64,22 +64,33 @@ class FileUploadManager {
             this.setLoading(unit, lesson, true);
 
             try {
-                // Ruta: unidad1/semana1/123456789_nombre.pdf
-                const fileName = `${unit}/${lesson}/${Date.now()}_${file.name}`;
+                // Nombre único para evitar colisiones
+                const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                const fileName = `${unit}/${lesson}/${Date.now()}_${safeName}`;
 
-                // 1. Subir al Bucket 'tareas' (Asegúrate que se llame así en tu panel)
+                // 1. Subir al bucket 'tareas'
                 const { data: storageData, error: storageError } = await this.supabaseClient
-                    .storage.from('tareas').upload(fileName, file);
-                
-                if (storageError) throw storageError;
+                    .storage
+                    .from('tareas')
+                    .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (storageError) {
+                    console.error('Error storage:', storageError);
+                    throw new Error(`Error al subir archivo: ${storageError.message}`);
+                }
 
                 // 2. Obtener URL pública
                 const { data: urlData } = this.supabaseClient
-                    .storage.from('tareas').getPublicUrl(fileName);
-                
+                    .storage
+                    .from('tareas')
+                    .getPublicUrl(fileName);
+
                 const fileUrl = urlData.publicUrl;
 
-                // 3. Guardar metadatos en Tabla 'files'
+                // 3. Guardar metadatos en tabla 'files'
                 const fileMetadata = {
                     name: file.name,
                     size: file.size,
@@ -90,16 +101,22 @@ class FileUploadManager {
                     upload_date: new Date().toISOString()
                 };
 
-                const { error: insertError } = await this.supabaseClient.from('files').insert([fileMetadata]);
-                if (insertError) throw insertError;
+                const { error: insertError } = await this.supabaseClient
+                    .from('files')
+                    .insert([fileMetadata]);
 
-                await this.loadFilesFromSupabase(); 
+                if (insertError) {
+                    console.error('Error insert:', insertError);
+                    throw new Error(`Error al guardar metadatos: ${insertError.message}`);
+                }
+
+                await this.loadFilesFromSupabase();
                 this.renderUploadedFiles();
-                this.notify(`¡${file.name} subido correctamente!`, 'success');
+                this.notify(`✅ ${file.name} subido correctamente!`, 'success');
 
             } catch (error) {
                 console.error('Error detallado:', error);
-                this.notify('Error al subir a Supabase', 'error');
+                this.notify(`❌ Error: ${error.message}`, 'error');
             } finally {
                 this.setLoading(unit, lesson, false);
             }
@@ -125,7 +142,7 @@ class FileUploadManager {
                             <small style="font-size: 0.7rem; color: #666;">${new Date(file.upload_date).toLocaleDateString()}</small>
                         </div>
                     </div>
-                    <button onclick="window.fileUploadManager.deleteFile('${file.id}')" style="background: none; border: none; color: #ff4d4d; cursor: pointer; padding: 5px;">
+                    <button onclick="window.fileUploadManager.deleteFile('${file.id}')" style="background: none; border: none; color: #ff4d4d; cursor: pointer; padding: 5px;" title="Eliminar entrega">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     </button>
                 </div>
@@ -138,13 +155,18 @@ class FileUploadManager {
 
         try {
             if (this.supabaseClient) {
-                await this.supabaseClient.from('files').delete().eq('id', id);
+                const { error } = await this.supabaseClient
+                    .from('files')
+                    .delete()
+                    .eq('id', id);
+                if (error) throw error;
             }
             this.uploadedFiles = this.uploadedFiles.filter(f => f.id != id);
             this.saveToStorage();
             this.renderUploadedFiles();
             this.notify('Archivo eliminado', 'info');
         } catch (error) {
+            console.error('Error al eliminar:', error);
             this.notify('Error al eliminar', 'error');
         }
     }
@@ -153,11 +175,11 @@ class FileUploadManager {
         document.querySelectorAll('.file-upload-area').forEach(area => {
             const input = area.querySelector('input[type="file"]');
             if (!input) return;
-            
+
             area.addEventListener('click', (e) => {
-                if(e.target !== input) input.click();
+                if (e.target !== input) input.click();
             });
-            
+
             input.addEventListener('change', (e) => {
                 const { unit, lesson } = input.dataset;
                 this.handleFiles(e.target.files, unit, lesson);
@@ -185,35 +207,55 @@ class FileUploadManager {
     }
 
     getFileIcon(type) {
-        if (type && type.includes('pdf')) return '📕';
+        if (!type) return '📄';
+        if (type.includes('pdf')) return '📕';
+        if (type.includes('image')) return '🖼️';
+        if (type.includes('word') || type.includes('document')) return '📝';
+        if (type.includes('sheet') || type.includes('excel')) return '📊';
+        if (type.includes('zip') || type.includes('rar')) return '🗜️';
         return '📄';
     }
 
     setLoading(unit, lesson, isLoading) {
-        const area = document.querySelector(`.file-upload-input[data-unit="${unit}"][data-lesson="${lesson}"]`)?.closest('.file-upload-area');
+        const input = document.querySelector(`.file-upload-input[data-unit="${unit}"][data-lesson="${lesson}"]`);
+        const area = input?.closest('.file-upload-area');
         if (area) {
             area.style.opacity = isLoading ? '0.5' : '1';
             area.style.pointerEvents = isLoading ? 'none' : 'auto';
             const text = area.querySelector('.file-upload-text');
-            if (text && isLoading) text.innerText = 'Subiendo a la nube...';
-            if (text && !isLoading) text.innerText = 'Arrastra archivos aquí o haz clic para seleccionar';
+            if (text) {
+                text.innerText = isLoading
+                    ? '⏳ Subiendo a la nube...'
+                    : 'Arrastra archivos aquí o haz clic para seleccionar';
+            }
         }
     }
 
     validateFile(file) {
         if (file.size > this.maxFileSize) {
-            alert('El archivo supera los 10MB permitidos.');
+            this.notify(`❌ "${file.name}" supera los 10MB permitidos.`, 'error');
             return false;
         }
         return true;
     }
 
     notify(msg, type) {
-        // Intenta usar tu sistema de notificaciones, si no, usa alert
         if (window.ERY?.utils?.showNotification) {
             window.ERY.utils.showNotification(msg, type);
         } else {
-            alert(msg);
+            // Notificación visual simple si no hay sistema de notificaciones
+            const div = document.createElement('div');
+            div.textContent = msg;
+            div.style.cssText = `
+                position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+                padding: 12px 20px; border-radius: 8px; font-size: 0.9rem;
+                color: white; font-weight: 500; max-width: 350px;
+                background: ${type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease;
+            `;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 4000);
         }
     }
 
@@ -221,14 +263,20 @@ class FileUploadManager {
     saveToStorage() { localStorage.setItem('ery_files', JSON.stringify(this.uploadedFiles)); }
 }
 
-// Inicialización Automática
+// ===================================
+// INICIALIZACIÓN AUTOMÁTICA
+// Lee las credenciales desde los meta tags del HTML
+// ===================================
 document.addEventListener('DOMContentLoaded', () => {
     const url = document.querySelector('meta[name="supabase-url"]')?.content;
     const key = document.querySelector('meta[name="supabase-key"]')?.content;
-    
+
     if (url && key) {
         window.fileUploadManager = new FileUploadManager(url, key);
     } else {
-        console.error("No se encontraron las credenciales de Supabase en los meta tags.");
+        console.error('❌ No se encontraron las credenciales de Supabase en los meta tags.');
+        console.info('Agrega esto en el <head> de tu HTML:');
+        console.info('<meta name="supabase-url" content="TU_URL">');
+        console.info('<meta name="supabase-key" content="TU_ANON_KEY">');
     }
 });
