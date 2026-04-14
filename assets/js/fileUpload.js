@@ -148,26 +148,7 @@ class FileUploadManager {
         });
     }
 
-    async deleteFile(id) {
-        if (!confirm('¿Deseas eliminar esta entrega?')) return;
-
-        try {
-            if (this.supabaseClient) {
-                const { error } = await this.supabaseClient
-                    .from('files')
-                    .delete()
-                    .eq('id', id);
-                if (error) throw error;
-            }
-            this.uploadedFiles = this.uploadedFiles.filter(f => f.id != id);
-            this.saveToStorage();
-            this.renderUploadedFiles();
-            this.notify('Archivo eliminado', 'info');
-        } catch (error) {
-            console.error('Error al eliminar:', error);
-            this.notify('Error al eliminar', 'error');
-        }
-    }
+    
 
     setupEventListeners() {
         document.querySelectorAll('.file-upload-area').forEach(area => {
