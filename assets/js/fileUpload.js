@@ -36,6 +36,11 @@ class FileUploadManager {
         return false;
     }
 
+    // ✅ Detecta si hay sesión iniciada usando tu AuthManager (ERY.auth)
+    isLoggedIn() {
+        return !!(window.ERY?.auth?.currentUser);
+    }
+
     async loadFilesFromSupabase() {
         try {
             const { data, error } = await this.supabaseClient
@@ -53,6 +58,12 @@ class FileUploadManager {
     }
 
     async handleFiles(files, unit, lesson) {
+        // Solo usuarios con sesión pueden subir
+        if (!this.isLoggedIn()) {
+            this.notify('⚠️ Debes iniciar sesión para subir archivos', 'error');
+            return;
+        }
+
         if (!this.supabaseClient) {
             this.notify('Error: Supabase no configurado', 'error');
             return;
@@ -64,7 +75,6 @@ class FileUploadManager {
             this.setLoading(unit, lesson, true);
 
             try {
-                // Nombre único para evitar colisiones
                 const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
                 const fileName = `${unit}/${lesson}/${Date.now()}_${safeName}`;
 
@@ -77,10 +87,7 @@ class FileUploadManager {
                         upsert: false
                     });
 
-                if (storageError) {
-                    console.error('Error storage:', storageError);
-                    throw new Error(`Error al subir archivo: ${storageError.message}`);
-                }
+                if (storageError) throw new Error(`Error al subir archivo: ${storageError.message}`);
 
                 // 2. Obtener URL pública
                 const { data: urlData } = this.supabaseClient
@@ -105,10 +112,7 @@ class FileUploadManager {
                     .from('files')
                     .insert([fileMetadata]);
 
-                if (insertError) {
-                    console.error('Error insert:', insertError);
-                    throw new Error(`Error al guardar metadatos: ${insertError.message}`);
-                }
+                if (insertError) throw new Error(`Error al guardar metadatos: ${insertError.message}`);
 
                 await this.loadFilesFromSupabase();
                 this.renderUploadedFiles();
@@ -124,6 +128,9 @@ class FileUploadManager {
     }
 
     renderUploadedFiles() {
+        // ✅ Verifica sesión en cada render
+        const loggedIn = this.isLoggedIn();
+
         document.querySelectorAll('.file-list').forEach(container => {
             const { unit, lesson } = container.dataset;
             const files = this.uploadedFiles.filter(f => f.unit === unit && f.lesson === lesson);
@@ -138,17 +145,58 @@ class FileUploadManager {
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span>${this.getFileIcon(file.type)}</span>
                         <div style="display: flex; flex-direction: column;">
-                            <a href="${file.url}" target="_blank" style="font-size: 0.9rem; color: var(--color-primary); text-decoration: none; font-weight: 500;">${file.name}</a>
-                            <small style="font-size: 0.7rem; color: #666;">${new Date(file.upload_date).toLocaleDateString()}</small>
+                            <a href="${file.url}" target="_blank" download
+                               style="font-size: 0.9rem; color: var(--color-primary); text-decoration: none; font-weight: 500;">
+                                ${file.name}
+                            </a>
+                            <small style="font-size: 0.7rem; color: #666;">
+                                ${new Date(file.upload_date).toLocaleDateString()}
+                            </small>
                         </div>
                     </div>
-                    
+
+                    ${loggedIn ? `
+                        <!-- SESIÓN INICIADA: botón eliminar -->
+                        <button onclick="window.fileUploadManager.deleteFile('${file.id}')"
+                            title="Eliminar entrega"
+                            style="background: none; border: none; color: #ff4d4d; cursor: pointer; padding: 5px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                        </button>
+                    ` : `
+                        <!-- MODO INVITADO: solo icono de descarga -->
+                        <a href="${file.url}" target="_blank" download
+                           title="Descargar archivo"
+                           style="color: #888; padding: 5px; display: flex; align-items: center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </a>
+                    `}
                 </div>
             `).join('');
+        });
+
+        // ✅ Ocultar zona de subida si es invitado
+        this.toggleUploadAreas(loggedIn);
+    }
+
+    // ✅ Muestra u oculta las zonas de subida según sesión
+    toggleUploadAreas(loggedIn) {
+        document.querySelectorAll('.file-upload-area').forEach(area => {
+            area.style.display = loggedIn ? '' : 'none';
         });
     }
 
     async deleteFile(id) {
+        if (!this.isLoggedIn()) {
+            this.notify('⚠️ Debes iniciar sesión para eliminar archivos', 'error');
+            return;
+        }
+
         if (!confirm('¿Deseas eliminar esta entrega?')) return;
 
         try {
@@ -162,10 +210,10 @@ class FileUploadManager {
             this.uploadedFiles = this.uploadedFiles.filter(f => f.id != id);
             this.saveToStorage();
             this.renderUploadedFiles();
-            this.notify('Archivo eliminado', 'info');
+            this.notify('🗑️ Archivo eliminado', 'info');
         } catch (error) {
             console.error('Error al eliminar:', error);
-            this.notify('Error al eliminar', 'error');
+            this.notify('❌ Error al eliminar', 'error');
         }
     }
 
@@ -201,6 +249,11 @@ class FileUploadManager {
                 const { unit, lesson } = input.dataset;
                 this.handleFiles(e.dataTransfer.files, unit, lesson);
             });
+        });
+
+        // ✅ Re-renderizar cuando cambia autenticación
+        document.addEventListener('authStateChanged', () => {
+            this.renderUploadedFiles();
         });
     }
 
@@ -241,7 +294,6 @@ class FileUploadManager {
         if (window.ERY?.utils?.showNotification) {
             window.ERY.utils.showNotification(msg, type);
         } else {
-            // Notificación visual simple si no hay sistema de notificaciones
             const div = document.createElement('div');
             div.textContent = msg;
             div.style.cssText = `
@@ -250,7 +302,6 @@ class FileUploadManager {
                 color: white; font-weight: 500; max-width: 350px;
                 background: ${type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#3b82f6'};
                 box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                animation: slideIn 0.3s ease;
             `;
             document.body.appendChild(div);
             setTimeout(() => div.remove(), 4000);
@@ -263,7 +314,6 @@ class FileUploadManager {
 
 // ===================================
 // INICIALIZACIÓN AUTOMÁTICA
-// Lee las credenciales desde los meta tags del HTML
 // ===================================
 document.addEventListener('DOMContentLoaded', () => {
     const url = document.querySelector('meta[name="supabase-url"]')?.content;
@@ -272,9 +322,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (url && key) {
         window.fileUploadManager = new FileUploadManager(url, key);
     } else {
-        console.error('❌ No se encontraron las credenciales de Supabase en los meta tags.');
-        console.info('Agrega esto en el <head> de tu HTML:');
-        console.info('<meta name="supabase-url" content="TU_URL">');
-        console.info('<meta name="supabase-key" content="TU_ANON_KEY">');
+        console.error('❌ No se encontraron credenciales de Supabase en los meta tags.');
     }
 });
