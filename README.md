@@ -1,4 +1,4 @@
-# PORTAFOLIO ERY CURSOS - Arquitectura de Software
+# PORTAFOLIO CORONEL GUEVARA - Arquitectura de Software
 
 > Plataforma educativa moderna para el curso de Arquitectura de Software
 
@@ -51,8 +51,8 @@ Cada unidad contiene 4 semanas de contenido con material descargable y espacio p
 1. Clona este repositorio:
 
 ```bash
-git clone https://github.com/TU_USUARIO/PORTAFOLIO_ERY_CURSOS.git
-cd PORTAFOLIO_ERY_CURSOS
+git clone [https://github.com/TU_USUARIO/PORTAFOLIO_ERY_CURSOS.git](https://q03478j.github.io/CORONEL_GUEVARA_ARQUITECURA_DE_SOFTWARE_2026/index.html)](https://q03478j.github.io/CORONEL_GUEVARA_ARQUITECURA_DE_SOFTWARE_2026/pages/unidad1.html)
+cd PORTAFOLIO_CORONEL_GUEVARA
 ```
 
 1. Configura Supabase (opcional pero recomendado):
@@ -93,7 +93,7 @@ git push origin main
 1. Ve a Settings > Pages en tu repositorio
 2. Selecciona la rama `main` y carpeta `/root`
 3. Haz clic en "Save"
-4. Tu sitio estará disponible en `https://TU_USUARIO.github.io/PORTAFOLIO_ERY_CURSOS/`
+4. Tu sitio estará disponible en `[https://TU_USUARIO.github.io/PORTAFOLIO_ERY_CURSOS/](https://q03478j.github.io/CORONEL_GUEVARA_ARQUITECURA_DE_SOFTWARE_2026/pages/unidad1.html)`
 
 ## ⚙️ Configuración de Supabase (REQUERIDO)
 
@@ -282,14 +282,14 @@ PORTAFOLIO_ERY_CURSOS/
 
 ## 👤 Autor
 
-**Edwin Ramirez**
+**Coronel Guevara**
 
-- Email: <edwramirezy@gmail.com>
-- Teléfono: +51 967013078
+- Email: <q03478j@upla.edu.pe>
+- Teléfono: +51 927 125 942
 
 ## 📝 Licencia
 
-© 2025 Edwin Ramirez. Todos los derechos reservados.
+© 2026 Coronel Guevara Jack Yhems. Todos los derechos reservados.
 
 ## 🤝 Contribuciones
 
@@ -312,7 +312,7 @@ Si encuentras algún bug, por favor crea un issue en GitHub con:
 
 ## 📞 Soporte
 
-Para soporte, contacta a <edwramirezy@gmail.com>
+Para soporte, contacta a <q03478j@upla.edu.pe>
 
 ---
 
