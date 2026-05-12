@@ -80,7 +80,7 @@ class FileUploadManager {
                         upsert: false
                     });
 
-                if (storageError) throw new Error(`Error al subir archivo: ${storageError.message}`);
+                if (storageError) throw new Error(`Error al subir archivo: ${storageError.message} (código: ${storageError.statusCode || 'N/A'})`);
 
                 // 2. Obtener URL pública
                 const { data: urlData } = this.supabaseClient
@@ -91,21 +91,24 @@ class FileUploadManager {
                 const fileUrl = urlData.publicUrl;
 
                 // 3. Guardar metadatos en tabla 'files'
+                const currentUser = window.ERY?.auth?.currentUser;
                 const fileMetadata = {
                     name: file.name,
+                    original_name: file.name,
                     size: file.size,
                     type: file.type,
                     unit: unit,
                     lesson: lesson,
                     url: fileUrl,
-                    upload_date: new Date().toISOString()
+                    upload_date: new Date().toISOString(),
+                    user_id: currentUser?.id || null
                 };
 
                 const { error: insertError } = await this.supabaseClient
                     .from('files')
                     .insert([fileMetadata]);
 
-                if (insertError) throw new Error(`Error al guardar metadatos: ${insertError.message}`);
+                if (insertError) throw new Error(`Error al guardar metadatos: ${insertError.message} (detalle: ${insertError.details || insertError.hint || 'N/A'})`);
 
                 await this.loadFilesFromSupabase();
                 this.renderUploadedFiles();
