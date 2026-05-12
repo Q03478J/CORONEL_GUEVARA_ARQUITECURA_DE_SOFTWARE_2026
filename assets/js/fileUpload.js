@@ -1,6 +1,6 @@
 // ===================================
 // FILE UPLOAD SYSTEM - CORONEL_GUEVARA
-// SUPABASE STORAGE & DATABASE SYNC
+// Adaptado a tabla real: entregas (unidad, semana, nombre_archivo, url_archivo)
 // ===================================
 
 class FileUploadManager {
@@ -8,29 +8,35 @@ class FileUploadManager {
         this.supabaseClient = null;
         this.maxFileSize = 10 * 1024 * 1024; // 10MB
         this.uploadedFiles = [];
-        // Esperar a que auth.js inicialice primero
-        this.waitForAuth();
+        this.init();
     }
 
-    // ✅ SOLUCIÓN: espera a que ERY.auth esté listo y reutiliza SU cliente
-    waitForAuth() {
+    init() {
         const tryInit = async () => {
             if (window.ERY?.auth?.supabaseClient) {
-                // Reutilizar el cliente ya creado por auth.js (evita duplicados)
                 this.supabaseClient = window.ERY.auth.supabaseClient;
-                console.log('✅ FileUpload: usando cliente Supabase de auth.js');
-                await this.loadFilesFromSupabase();
-                this.setupEventListeners();
-                this.renderUploadedFiles();
+                console.log('✅ FileUpload: usando cliente de auth.js');
+            } else if (window.supabase) {
+                const url = document.querySelector('meta[name="supabase-url"]')?.content;
+                const key = document.querySelector('meta[name="supabase-key"]')?.content;
+                if (url && key) {
+                    this.supabaseClient = window.supabase.createClient(url, key);
+                    console.log('✅ FileUpload: cliente creado desde meta tags');
+                } else {
+                    console.error('❌ FileUpload: no se encontraron credenciales Supabase');
+                    return;
+                }
             } else {
-                // auth.js aún no está listo, reintentar en 300ms
                 setTimeout(tryInit, 300);
+                return;
             }
+            await this.loadFilesFromSupabase();
+            this.setupEventListeners();
+            this.renderUploadedFiles();
         };
         tryInit();
     }
 
-    // ✅ Detecta sesión usando el auth de ERY
     isLoggedIn() {
         return !!(window.ERY?.auth?.currentUser);
     }
@@ -38,85 +44,88 @@ class FileUploadManager {
     async loadFilesFromSupabase() {
         try {
             const { data, error } = await this.supabaseClient
-                .from('files')
+                .from('entregas')
                 .select('*')
-                .order('upload_date', { ascending: false });
-
+                .order('created_at', { ascending: false });
             if (error) throw error;
-            this.uploadedFiles = data || [];
+            this.uploadedFiles = (data || []).map(e => ({
+                id: e.id,
+                name: e.nombre_archivo,
+                url: e.url_archivo,
+                unit: e.unidad,
+                lesson: e.semana,
+                upload_date: e.created_at,
+                type: this.guessType(e.nombre_archivo)
+            }));
             this.saveToStorage();
         } catch (error) {
-            console.error('Error cargando archivos:', error);
+            console.error('Error cargando entregas:', error);
             this.uploadedFiles = this.loadFromStorage();
         }
     }
 
+    guessType(filename) {
+        if (!filename) return '';
+        const ext = filename.split('.').pop().toLowerCase();
+        if (ext === 'pdf') return 'application/pdf';
+        if (['jpg','jpeg','png','gif','webp'].includes(ext)) return 'image/' + ext;
+        if (['doc','docx'].includes(ext)) return 'application/msword';
+        if (['xls','xlsx'].includes(ext)) return 'application/vnd.ms-excel';
+        if (['ppt','pptx'].includes(ext)) return 'application/vnd.ms-powerpoint';
+        if (['zip','rar'].includes(ext)) return 'application/zip';
+        return 'application/octet-stream';
+    }
+
     async handleFiles(files, unit, lesson) {
-        if (!this.isLoggedIn()) {
-            this.notify('⚠️ Debes iniciar sesión para subir archivos', 'error');
-            return;
-        }
-
         if (!this.supabaseClient) {
-            this.notify('❌ Supabase no está listo aún, intenta de nuevo', 'error');
+            this.notify('❌ Supabase no está listo, recarga la página', 'error');
             return;
         }
-
         for (let file of files) {
             if (!this.validateFile(file)) continue;
-
             this.setLoading(unit, lesson, true);
-
             try {
                 const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-                const fileName = `${unit}/${lesson}/${Date.now()}_${safeName}`;
+                const filePath = `${unit}/${lesson}/${Date.now()}_${safeName}`;
 
-                // 1. Subir al bucket 'course-uploads'
-                const { data: storageData, error: storageError } = await this.supabaseClient
-                    .storage
-                    .from('course-uploads')
-                    .upload(fileName, file, {
-                        cacheControl: '3600',
-                        upsert: false
-                    });
+                // Intentar subir al bucket 'tareas', luego 'course-uploads' como fallback
+                let fileUrl = '';
+                const buckets = ['tareas', 'course-uploads'];
+                let uploaded = false;
+                for (const bucket of buckets) {
+                    const { error: storageError } = await this.supabaseClient
+                        .storage.from(bucket)
+                        .upload(filePath, file, { cacheControl: '3600', upsert: true });
+                    if (!storageError) {
+                        const { data: urlData } = this.supabaseClient.storage
+                            .from(bucket).getPublicUrl(filePath);
+                        fileUrl = urlData.publicUrl;
+                        uploaded = true;
+                        console.log(`✅ Archivo subido al bucket: ${bucket}`);
+                        break;
+                    } else {
+                        console.warn(`⚠️ Bucket '${bucket}' falló: ${storageError.message}`);
+                    }
+                }
+                if (!uploaded) throw new Error('No se pudo subir el archivo. Verifica los buckets en Supabase Storage.');
 
-                if (storageError) throw new Error(`Error al subir archivo: ${storageError.message} (código: ${storageError.statusCode || 'N/A'})`);
-
-                // 2. Obtener URL pública
-                const { data: urlData } = this.supabaseClient
-                    .storage
-                    .from('course-uploads')
-                    .getPublicUrl(fileName);
-
-                const fileUrl = urlData.publicUrl;
-
-                // 3. Guardar metadatos en tabla 'files'
-                const currentUser = window.ERY?.auth?.currentUser;
-                const fileMetadata = {
-                    name: file.name,
-                    original_name: file.name,
-                    size: file.size,
-                    type: file.type,
-                    unit: unit,
-                    lesson: lesson,
-                    url: fileUrl,
-                    upload_date: new Date().toISOString(),
-                    user_id: currentUser?.id || null
-                };
-
+                // Guardar en tabla 'entregas'
                 const { error: insertError } = await this.supabaseClient
-                    .from('files')
-                    .insert([fileMetadata]);
-
-                if (insertError) throw new Error(`Error al guardar metadatos: ${insertError.message} (detalle: ${insertError.details || insertError.hint || 'N/A'})`);
+                    .from('entregas')
+                    .insert([{
+                        unidad: unit,
+                        semana: lesson,
+                        nombre_archivo: file.name,
+                        url_archivo: fileUrl
+                    }]);
+                if (insertError) throw new Error(`Error BD: ${insertError.message} — ${insertError.details || insertError.hint || ''}`);
 
                 await this.loadFilesFromSupabase();
                 this.renderUploadedFiles();
                 this.notify(`✅ ${file.name} subido correctamente!`, 'success');
-
             } catch (error) {
                 console.error('Error detallado:', error);
-                this.notify(`❌ Error: ${error.message}`, 'error');
+                this.notify(`❌ ${error.message}`, 'error');
             } finally {
                 this.setLoading(unit, lesson, false);
             }
@@ -124,78 +133,42 @@ class FileUploadManager {
     }
 
     renderUploadedFiles() {
-        const loggedIn = this.isLoggedIn();
-
         document.querySelectorAll('.file-list').forEach(container => {
             const { unit, lesson } = container.dataset;
             const files = this.uploadedFiles.filter(f => f.unit === unit && f.lesson === lesson);
-
             if (files.length === 0) {
-                container.innerHTML = '<div style="font-size: 0.8rem; color: #888; margin-top: 10px;">Sin entregas aún.</div>';
+                container.innerHTML = '<div style="font-size:0.8rem;color:#888;margin-top:10px;">Sin entregas aún.</div>';
                 return;
             }
-
             container.innerHTML = files.map(file => `
-                <div class="file-item animate-fade-in" style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.1);">
-                    <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="file-item animate-fade-in" style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.05);padding:8px 12px;border-radius:8px;margin-top:8px;border:1px solid rgba(255,255,255,0.1);">
+                    <div style="display:flex;align-items:center;gap:10px;">
                         <span>${this.getFileIcon(file.type)}</span>
-                        <div style="display: flex; flex-direction: column;">
-                            <a href="${file.url}" target="_blank" download
-                               style="font-size: 0.9rem; color: var(--color-primary); text-decoration: none; font-weight: 500;">
-                                ${file.name}
-                            </a>
-                            <small style="font-size: 0.7rem; color: #666;">
-                                ${new Date(file.upload_date).toLocaleDateString()}
-                            </small>
+                        <div style="display:flex;flex-direction:column;">
+                            <a href="${file.url}" target="_blank" download style="font-size:0.9rem;color:var(--color-primary);text-decoration:none;font-weight:500;">${file.name}</a>
+                            <small style="font-size:0.7rem;color:#666;">${new Date(file.upload_date).toLocaleDateString()}</small>
                         </div>
                     </div>
-                    ${loggedIn ? `
-                        <button onclick="window.fileUploadManager.deleteFile('${file.id}')"
-                            title="Eliminar entrega"
-                            style="background: none; border: none; color: #ff4d4d; cursor: pointer; padding: 5px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                            </svg>
-                        </button>
-                    ` : `
-                        <a href="${file.url}" target="_blank" download title="Descargar"
-                           style="color: #888; padding: 5px; display: flex; align-items: center;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="7 10 12 15 17 10"/>
-                                <line x1="12" y1="15" x2="12" y2="3"/>
-                            </svg>
-                        </a>
-                    `}
+                    <button onclick="window.fileUploadManager.deleteFile('${file.id}')" title="Eliminar" style="background:none;border:none;color:#ff4d4d;cursor:pointer;padding:5px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
                 </div>
             `).join('');
         });
-
-        this.toggleUploadAreas(loggedIn);
-    }
-
-    toggleUploadAreas(loggedIn) {
-        document.querySelectorAll('.file-upload-area').forEach(area => {
-            area.style.display = loggedIn ? '' : 'none';
-        });
+        document.querySelectorAll('.file-upload-area').forEach(area => area.style.display = '');
     }
 
     async deleteFile(id) {
-        if (!this.isLoggedIn()) {
-            this.notify('⚠️ Debes iniciar sesión para eliminar archivos', 'error');
-            return;
-        }
         if (!confirm('¿Deseas eliminar esta entrega?')) return;
         try {
-            const { error } = await this.supabaseClient.from('files').delete().eq('id', id);
+            const { error } = await this.supabaseClient.from('entregas').delete().eq('id', id);
             if (error) throw error;
             this.uploadedFiles = this.uploadedFiles.filter(f => f.id != id);
             this.saveToStorage();
             this.renderUploadedFiles();
             this.notify('🗑️ Archivo eliminado', 'info');
         } catch (error) {
-            console.error('Error al eliminar:', error);
-            this.notify('❌ Error al eliminar', 'error');
+            this.notify('❌ Error al eliminar: ' + error.message, 'error');
         }
     }
 
@@ -203,40 +176,24 @@ class FileUploadManager {
         document.querySelectorAll('.file-upload-area').forEach(area => {
             const input = area.querySelector('input[type="file"]');
             if (!input) return;
-
-            area.addEventListener('click', (e) => {
-                if (e.target !== input) input.click();
-            });
-
+            area.addEventListener('click', (e) => { if (e.target !== input) input.click(); });
             input.addEventListener('change', (e) => {
                 const { unit, lesson } = input.dataset;
-                this.handleFiles(e.target.files, unit, lesson);
+                if (unit && lesson) this.handleFiles(e.target.files, unit, lesson);
             });
-
             area.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 area.style.borderColor = 'var(--color-primary)';
-                area.style.background = 'rgba(var(--color-primary-rgb), 0.05)';
             });
-
-            area.addEventListener('dragleave', () => {
-                area.style.borderColor = '';
-                area.style.background = '';
-            });
-
+            area.addEventListener('dragleave', () => { area.style.borderColor = ''; });
             area.addEventListener('drop', (e) => {
                 e.preventDefault();
                 area.style.borderColor = '';
-                area.style.background = '';
                 const { unit, lesson } = input.dataset;
-                this.handleFiles(e.dataTransfer.files, unit, lesson);
+                if (unit && lesson) this.handleFiles(e.dataTransfer.files, unit, lesson);
             });
         });
-
-        // Re-renderizar cuando cambia la sesión
-        document.addEventListener('authStateChanged', () => {
-            this.renderUploadedFiles();
-        });
+        document.addEventListener('authStateChanged', () => this.renderUploadedFiles());
     }
 
     getFileIcon(type) {
@@ -256,11 +213,7 @@ class FileUploadManager {
             area.style.opacity = isLoading ? '0.5' : '1';
             area.style.pointerEvents = isLoading ? 'none' : 'auto';
             const text = area.querySelector('.file-upload-text');
-            if (text) {
-                text.innerText = isLoading
-                    ? '⏳ Subiendo a la nube...'
-                    : 'Arrastra archivos aquí o haz clic para seleccionar';
-            }
+            if (text) text.innerText = isLoading ? '⏳ Subiendo a la nube...' : 'Arrastra archivos aquí o haz clic para seleccionar';
         }
     }
 
@@ -278,15 +231,9 @@ class FileUploadManager {
         } else {
             const div = document.createElement('div');
             div.textContent = msg;
-            div.style.cssText = `
-                position: fixed; bottom: 20px; right: 20px; z-index: 9999;
-                padding: 12px 20px; border-radius: 8px; font-size: 0.9rem;
-                color: white; font-weight: 500; max-width: 350px;
-                background: ${type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#3b82f6'};
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            `;
+            div.style.cssText = `position:fixed;bottom:20px;right:20px;z-index:9999;padding:12px 20px;border-radius:8px;font-size:0.9rem;color:white;font-weight:500;max-width:350px;background:${type==='success'?'#22c55e':type==='error'?'#ef4444':'#3b82f6'};box-shadow:0 4px 12px rgba(0,0,0,0.3);`;
             document.body.appendChild(div);
-            setTimeout(() => div.remove(), 4000);
+            setTimeout(() => div.remove(), 5000);
         }
     }
 
@@ -294,9 +241,6 @@ class FileUploadManager {
     saveToStorage() { localStorage.setItem('ery_files', JSON.stringify(this.uploadedFiles)); }
 }
 
-// ===================================
-// INICIALIZACIÓN — Sin crear nuevo cliente Supabase
-// ===================================
 document.addEventListener('DOMContentLoaded', () => {
     window.fileUploadManager = new FileUploadManager();
 });
