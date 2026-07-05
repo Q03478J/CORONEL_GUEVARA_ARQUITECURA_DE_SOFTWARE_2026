@@ -15,7 +15,10 @@
     if (!mount) return;
 
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion) return; // se queda el degradado CSS de respaldo
+    if (reduceMotion) {
+        console.info('[hero-scene] Desactivado: el navegador/sistema tiene activado "reducir movimiento".');
+        return;
+    }
 
     var isSmall = window.innerWidth < 768;
     var NODE_COUNT = isSmall ? 60 : 150;
@@ -26,12 +29,13 @@
         .then(function (THREE) {
             try {
                 initScene(THREE);
+                console.info('[hero-scene] Grafo 3D iniciado correctamente.');
             } catch (err) {
                 console.warn('[hero-scene] WebGL no disponible, se mantiene el fondo CSS.', err);
             }
         })
         .catch(function (err) {
-            console.warn('[hero-scene] No se pudo cargar three.js, se mantiene el fondo CSS.', err);
+            console.warn('[hero-scene] No se pudo cargar three.js desde el CDN (revisa la pestaña Network), se mantiene el fondo CSS.', err);
         });
 
     function initScene(THREE) {

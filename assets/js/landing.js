@@ -164,6 +164,9 @@
             el.addEventListener('mouseenter', function () { ring.classList.add('is-active'); });
             el.addEventListener('mouseleave', function () { ring.classList.remove('is-active'); });
         });
+
+        // Solo se oculta el cursor nativo si todo lo anterior tuvo éxito
+        document.body.classList.add('cursor-ready');
     }
 
     /* =====================================================
@@ -280,34 +283,51 @@
     /* =====================================================
        INICIALIZACIÓN
        ===================================================== */
-    function initMotion() {
-        if (!window.gsap) return; // el contenido ya es visible por defecto (CSS)
+    function safeRun(fn, label) {
+        try {
+            fn();
+        } catch (err) {
+            console.warn('[landing] "' + label + '" no se pudo iniciar, se sigue con el resto:', err);
+        }
+    }
 
-        gsap.registerPlugin(window.ScrollTrigger, window.SplitText);
+    function initMotion() {
+        if (!window.gsap) {
+            console.warn('[landing] GSAP no cargó (revisa la consola/red) — la página sigue funcionando, solo sin animaciones.');
+            return;
+        }
+
+        safeRun(function () {
+            gsap.registerPlugin(window.ScrollTrigger, window.SplitText);
+        }, 'registro de plugins GSAP');
 
         if (!REDUCE_MOTION && window.Lenis) {
-            lenis = new Lenis({ lerp: 0.11, smoothWheel: true });
-            lenis.on('scroll', ScrollTrigger.update);
-            gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
-            gsap.ticker.lagSmoothing(0);
+            safeRun(function () {
+                lenis = new Lenis({ lerp: 0.11, smoothWheel: true });
+                lenis.on('scroll', ScrollTrigger.update);
+                gsap.ticker.add(function (time) { lenis.raf(time * 1000); });
+                gsap.ticker.lagSmoothing(0);
+            }, 'Lenis');
         }
 
         if (!REDUCE_MOTION) {
-            initCursor();
-            initMagnetic();
-            initMarquee();
-            initHeroIntro();
+            safeRun(initCursor, 'cursor personalizado');
+            safeRun(initMagnetic, 'botones magnéticos');
+            safeRun(initMarquee, 'marquee');
+            safeRun(initHeroIntro, 'intro del hero');
         }
 
-        initNavbarScroll();
-        initAnchorScroll();
-        initReveals();
+        safeRun(initNavbarScroll, 'navbar al hacer scroll');
+        safeRun(initAnchorScroll, 'scroll a anclas internas');
+        safeRun(initReveals, 'reveals al hacer scroll');
 
-        ScrollTrigger.refresh();
-        if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
-        }
-        window.addEventListener('load', function () { ScrollTrigger.refresh(); });
+        safeRun(function () {
+            ScrollTrigger.refresh();
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
+            }
+            window.addEventListener('load', function () { ScrollTrigger.refresh(); });
+        }, 'refresh de ScrollTrigger');
     }
 
     document.addEventListener('DOMContentLoaded', function () {
