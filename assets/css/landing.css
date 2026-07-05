@@ -24,10 +24,13 @@ body.landing { overflow-x: hidden; }
 /* =====================================================================
    CURSOR PERSONALIZADO — solo en dispositivos con puntero fino
    ===================================================================== */
-@media (hover: hover) and (pointer: fine) {
-    body.landing { cursor: none; }
-    body.landing a, body.landing button, body.landing .magnetic { cursor: none; }
-}
+/* El cursor nativo solo se oculta cuando el cursor personalizado
+   ya se dibujó con éxito (clase agregada por JS). Si algo falla
+   en la cadena de scripts, el cursor normal del sistema se queda. */
+body.landing.cursor-ready { cursor: none; }
+body.landing.cursor-ready a,
+body.landing.cursor-ready button,
+body.landing.cursor-ready .magnetic { cursor: none; }
 
 .cursor-dot, .cursor-ring {
     position: fixed;
