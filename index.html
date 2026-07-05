@@ -4,34 +4,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Portafolio de Coronel Guevara - Arquitectura de Software">
-    <meta name="author" content="Jack Coronel">
-    <title>PORTAFOLIO CORONEL GUEVARA - Arquitectura de Software</title>
-
-    <!-- ✅ FIREBASE SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
+    <meta name="description" content="Portafolio de Jack Yhems Coronel Guevara — Arquitectura de Software, UPLA 2026. Cuatro unidades, dieciséis semanas, un recorrido completo por el diseño de sistemas.">
+    <meta name="author" content="Jack Yhems Coronel Guevara">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>CORONEL_GUEVARA_2026 — Arquitectura de Software</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.3.25/dist/lenis.css">
 
     <link rel="stylesheet" href="assets/css/styles.css">
     <link rel="stylesheet" href="assets/css/components.css">
-    <link rel="stylesheet" href="assets/css/animations.css">
-    <link rel="stylesheet" href="assets/css/chatbox.css">
+    <link rel="stylesheet" href="assets/css/landing.css">
 </head>
 
-<body>
+<body class="landing">
+
+    <!-- ================= PRELOADER ================= -->
+    <div class="preloader" aria-hidden="true">
+        <p class="preloader-mark">CORONEL_GUEVARA_2026</p>
+        <p class="preloader-count"><span class="preloader-count-value">0</span></p>
+        <div class="preloader-bar"><i></i></div>
+    </div>
+
+    <!-- ================= NAVBAR ================= -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
             <div class="nav-brand">
                 <h1 class="logo">CORONEL<span class="logo-accent">_GUEVARA_2026</span></h1>
             </div>
 
-            <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation">
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Abrir navegación">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -44,12 +49,12 @@
                 <li><a href="pages/unidad2.html" class="nav-link">UNIDAD II</a></li>
                 <li><a href="pages/unidad3.html" class="nav-link">UNIDAD III</a></li>
                 <li><a href="pages/unidad4.html" class="nav-link">UNIDAD IV</a></li>
-                <a href="pages/contact.html">Contáctanos</a>
+                <li><a href="pages/contact.html" class="nav-link">Contáctanos</a></li>
                 <li><a href="pages/login.html" class="nav-link btn-login">Iniciar sesión</a></li>
             </ul>
 
             <div class="nav-actions">
-                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
                     <svg class="sun-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="2" />
                         <path d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -58,153 +63,316 @@
                         <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
                     </svg>
                 </button>
-                <img src="assets/images/upla.png" alt="UPLA Logo" class="upla-logo" onerror="this.style.display='none'">
+                <img src="assets/images/upla.png" alt="Universidad Peruana Los Andes" class="upla-logo" onerror="this.style.display='none'">
             </div>
         </div>
     </nav>
 
-    <section class="hero">
-        <div class="hero-background">
-            <div class="gradient-orb orb-1"></div>
-            <div class="gradient-orb orb-2"></div>
-            <div class="gradient-orb orb-3"></div>
-        </div>
+    <main>
+        <!-- ================= HERO ================= -->
+        <section class="hero-cinematic" id="hero">
+            <div class="hero-cinematic__bg">
+                <div class="hero-grid-overlay"></div>
+                <div class="hero-orb hero-orb--lime"></div>
+                <div class="hero-orb hero-orb--mint"></div>
+                <div id="hero-canvas-mount" class="hero-canvas-mount"></div>
+            </div>
 
-        <div class="hero-content">
-            <div class="hero-text">
-                <h1 class="hero-title">
-                    <span class="title-line">Portafolio</span>
-                    <span class="title-line gradient-text">Arquitectura de Software</span>
+            <div class="hero-cinematic__content land-container">
+                <p class="section-eyebrow hero-eyebrow">PORTAFOLIO ACADÉMICO — UPLA 2026</p>
+
+                <h1 class="hero-display">
+                    <span class="hero-display__line" data-split>Arquitectura</span>
+                    <span class="hero-display__line hero-display__line--accent" data-split>de Software</span>
                 </h1>
-                <p class="hero-subtitle">" La arquitectura sólida es el cimiento de sistemas escalables y eficientes ".</p>
-                <div class="hero-cta">
-                    <a href="pages/courses.html" class="btn btn-primary">
-                        Explorar Cursos
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M7 3L14 10L7 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
+
+                <p class="hero-lede">
+                    Cuatro unidades. Dieciséis semanas. Un recorrido completo por el diseño de sistemas:
+                    de los requerimientos a la evaluación de frameworks.
+                </p>
+
+                <div class="hero-actions">
+                    <a href="pages/courses.html" class="btn btn-primary btn-lg">
+                        Explorar el curso
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                     </a>
-                    <a href="pages/contact.html" class="btn btn-secondary">Contáctanos</a>
+                    <a href="#unidades" class="btn btn-ghost btn-lg">Ver unidades</a>
+                </div>
+
+                <div class="hero-meta-row">
+                    <div class="hero-meta-chip">
+                        <span class="hero-meta-chip__num" data-counter="4">0</span>
+                        <span class="hero-meta-chip__label">Unidades</span>
+                    </div>
+                    <div class="hero-meta-chip">
+                        <span class="hero-meta-chip__num" data-counter="16">0</span>
+                        <span class="hero-meta-chip__label">Semanas</span>
+                    </div>
+                    <div class="hero-meta-chip">
+                        <span class="hero-meta-chip__num" data-counter="100" data-suffix="%">0</span>
+                        <span class="hero-meta-chip__label">Online</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="hero-stats">
-                <div class="stat-card">
-                    <div class="stat-number">4</div>
-                    <div class="stat-label">Unidades</div>
+            <button class="hero-scroll-cue magnetic" onclick="document.getElementById('unidades').scrollIntoView({behavior:'smooth'})" aria-label="Ir a Unidades">
+                <span>SCROLL</span>
+                <span class="hero-scroll-cue__line"></span>
+            </button>
+        </section>
+
+        <!-- ================= MARQUEE ================= -->
+        <div class="marquee-strip" aria-hidden="true">
+            <div class="marquee-track">
+                <div class="marquee-group">
+                    <span>ARQUITECTURA_DE_SOFTWARE</span>
+                    <span class="is-accent">UPLA_2026</span>
+                    <span>INGENIERÍA_DE_SISTEMAS_Y_COMPUTACIÓN</span>
+                    <span class="is-accent">16_SEMANAS</span>
+                    <span>4_UNIDADES</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number">16</div>
-                    <div class="stat-label">Semanas</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">100%</div>
-                    <div class="stat-label">Online</div>
+                <div class="marquee-group">
+                    <span>ARQUITECTURA_DE_SOFTWARE</span>
+                    <span class="is-accent">UPLA_2026</span>
+                    <span>INGENIERÍA_DE_SISTEMAS_Y_COMPUTACIÓN</span>
+                    <span class="is-accent">16_SEMANAS</span>
+                    <span>4_UNIDADES</span>
                 </div>
             </div>
         </div>
-    </section>
 
-    <section class="units-preview">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Unidades del Curso</h2>
-                <p class="section-description">Domina el ciclo de vida de la arquitectura de sistemas</p>
+        <!-- ================= STATS ================= -->
+        <section class="stats-band land-section">
+            <div class="land-container">
+                <div class="stats-band__intro">
+                    <p class="section-eyebrow">EN NÚMEROS</p>
+                    <h2 class="section-heading">La estructura del curso, resumida.</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-block">
+                        <div class="stat-block__num"><span data-counter="4">0</span></div>
+                        <div class="stat-block__label">Unidades</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-block__num"><span data-counter="16">0</span></div>
+                        <div class="stat-block__label">Semanas</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-block__num"><span data-counter="100">0</span><span class="unit">%</span></div>
+                        <div class="stat-block__label">Online</div>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <div class="units-grid">
-                <a href="pages/unidad1.html" class="unit-card">
-                    <div class="unit-icon">
-                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                            <rect x="8" y="8" width="24" height="24" rx="4" stroke="currentColor" stroke-width="2" />
-                            <path d="M16 20L18 22L24 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
+        <!-- ================= UNIDADES ================= -->
+        <section class="units-index land-section" id="unidades">
+            <div class="land-container">
+                <div class="section-head-row">
+                    <div>
+                        <p class="section-eyebrow">EL RECORRIDO</p>
+                        <h2 class="section-heading">Cuatro unidades, un solo sistema.</h2>
                     </div>
-                    <div class="unit-content">
-                        <h3 class="unit-title">UNIDAD I</h3>
-                        <p class="unit-description">Introducción y Requerimientos</p>
-                        <div class="unit-meta">
-                            <span class="unit-lessons">Semanas 01 - 04</span>
-                        </div>
-                        <div class="progress" style="margin-top: var(--spacing-sm);">
-                            <div class="progress-bar" data-unit="unidad1" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                    <div class="unit-arrow">→</div>
+                    <p class="section-lede">Cada unidad construye sobre la anterior: de entender el problema a evaluar la solución final.</p>
+                </div>
+
+                <a href="pages/unidad1.html" class="unit-row" data-reveal-group="units">
+                    <span class="unit-row__index">01</span>
+                    <span class="unit-row__body">
+                        <span class="unit-row__title">Introducción y Requerimientos</span>
+                        <span class="unit-row__desc">Fundamentos de arquitectura de software y el levantamiento de requerimientos que sostienen cualquier sistema.</span>
+                    </span>
+                    <span class="unit-row__weeks">Semanas 01–04</span>
+                    <span class="unit-row__arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                    </span>
                 </a>
 
-                <a href="pages/unidad2.html" class="unit-card">
-                    <div class="unit-icon">
-                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                            <rect x="8" y="8" width="24" height="24" rx="4" stroke="currentColor" stroke-width="2" />
-                            <path d="M16 16H24M16 20H24M16 24H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        </svg>
-                    </div>
-                    <div class="unit-content">
-                        <h3 class="unit-title">UNIDAD II</h3>
-                        <p class="unit-description">Patrones y Estilos Arquitectónicos</p>
-                        <div class="unit-meta">
-                            <span class="unit-lessons">Semanas 05 - 08</span>
-                        </div>
-                        <div class="progress" style="margin-top: var(--spacing-sm);">
-                            <div class="progress-bar" data-unit="unidad2" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                    <div class="unit-arrow">→</div>
+                <a href="pages/unidad2.html" class="unit-row" data-reveal-group="units">
+                    <span class="unit-row__index">02</span>
+                    <span class="unit-row__body">
+                        <span class="unit-row__title">Patrones y Estilos Arquitectónicos</span>
+                        <span class="unit-row__desc">Los patrones y estilos que dan forma a sistemas escalables, mantenibles y preparados para crecer.</span>
+                    </span>
+                    <span class="unit-row__weeks">Semanas 05–08</span>
+                    <span class="unit-row__arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                    </span>
                 </a>
 
-                <a href="pages/unidad3.html" class="unit-card">
-                    <div class="unit-icon">
-                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                            <rect x="8" y="8" width="24" height="24" rx="4" stroke="currentColor" stroke-width="2" />
-                            <circle cx="20" cy="16" r="3" stroke="currentColor" stroke-width="2" />
-                            <path d="M12 28C12 24 16 24 20 24C24 24 28 24 28 28" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        </svg>
-                    </div>
-                    <div class="unit-content">
-                        <h3 class="unit-title">UNIDAD III</h3>
-                        <p class="unit-description">Comunicación de Arquitecturas</p>
-                        <div class="unit-meta">
-                            <span class="unit-lessons">Semanas 09 - 12</span>
-                        </div>
-                        <div class="progress" style="margin-top: var(--spacing-sm);">
-                            <div class="progress-bar" data-unit="unidad3" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                    <div class="unit-arrow">→</div>
+                <a href="pages/unidad3.html" class="unit-row" data-reveal-group="units">
+                    <span class="unit-row__index">03</span>
+                    <span class="unit-row__body">
+                        <span class="unit-row__title">Comunicación de Arquitecturas</span>
+                        <span class="unit-row__desc">Cómo documentar y comunicar una arquitectura para que todo el equipo la entienda de la misma forma.</span>
+                    </span>
+                    <span class="unit-row__weeks">Semanas 09–12</span>
+                    <span class="unit-row__arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                    </span>
                 </a>
 
-                <a href="pages/unidad4.html" class="unit-card">
-                    <div class="unit-icon">
-                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                            <rect x="8" y="8" width="24" height="24" rx="4" stroke="currentColor" stroke-width="2" />
-                            <path d="M20 14V26M14 20H26" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        </svg>
-                    </div>
-                    <div class="unit-content">
-                        <h3 class="unit-title">UNIDAD IV</h3>
-                        <p class="unit-description">Frameworks y Evaluación</p>
-                        <div class="unit-meta">
-                            <span class="unit-lessons">Semanas 13 - 16</span>
-                        </div>
-                        <div class="progress" style="margin-top: var(--spacing-sm);">
-                            <div class="progress-bar" data-unit="unidad4" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                    <div class="unit-arrow">→</div>
+                <a href="pages/unidad4.html" class="unit-row" data-reveal-group="units">
+                    <span class="unit-row__index">04</span>
+                    <span class="unit-row__body">
+                        <span class="unit-row__title">Frameworks y Evaluación</span>
+                        <span class="unit-row__desc">Marcos de trabajo y criterios para evaluar si una arquitectura realmente cumple lo que promete.</span>
+                    </span>
+                    <span class="unit-row__weeks">Semanas 13–16</span>
+                    <span class="unit-row__arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                    </span>
                 </a>
             </div>
-        </div>
-    </section>
+        </section>
 
+        <!-- ================= OBJETIVOS ================= -->
+        <section class="land-section" id="objetivos">
+            <div class="land-container">
+                <div class="section-head-row">
+                    <div>
+                        <p class="section-eyebrow">QUÉ CUBRE EL CURSO</p>
+                        <h2 class="section-heading">Cuatro competencias centrales.</h2>
+                    </div>
+                </div>
+
+                <div class="objectives-grid">
+                    <div class="objective-item" data-reveal-group="objectives">
+                        <span class="objective-item__tag">Competencia 01</span>
+                        <h3>Requerimientos</h3>
+                        <p>Levantar y analizar los requerimientos que definen el problema antes de diseñar la solución.</p>
+                    </div>
+                    <div class="objective-item" data-reveal-group="objectives">
+                        <span class="objective-item__tag">Competencia 02</span>
+                        <h3>Patrones arquitectónicos</h3>
+                        <p>Aplicar estilos y patrones probados para construir sistemas escalables y mantenibles.</p>
+                    </div>
+                    <div class="objective-item" data-reveal-group="objectives">
+                        <span class="objective-item__tag">Competencia 03</span>
+                        <h3>Documentación de arquitecturas</h3>
+                        <p>Comunicar decisiones de diseño con vistas y diagramas que todo el equipo pueda leer.</p>
+                    </div>
+                    <div class="objective-item" data-reveal-group="objectives">
+                        <span class="objective-item__tag">Competencia 04</span>
+                        <h3>Evaluación de frameworks</h3>
+                        <p>Elegir y evaluar frameworks con criterios objetivos, no solo por popularidad.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= AUTOR ================= -->
+        <section class="land-section" id="autor">
+            <div class="land-container author-section">
+                <div class="author-portrait" data-reveal>
+                    <img src="assets/images/coronel.jpg" alt="Jack Yhems Coronel Guevara" loading="lazy">
+                </div>
+                <div class="author-copy" data-reveal>
+                    <p class="section-eyebrow">SOBRE EL AUTOR</p>
+                    <h2 class="author-name">Jack Yhems<br>Coronel Guevara</h2>
+                    <p class="author-role">Ingeniería de Sistemas y Computación — Universidad Peruana Los Andes</p>
+                    <p class="author-quote">"La arquitectura sólida es el cimiento de sistemas escalables y eficientes."</p>
+                    <div class="author-chips">
+                        <span class="author-chip">UPLA</span>
+                        <span class="author-chip">Ingeniería de Sistemas y Computación</span>
+                        <span class="author-chip">Arquitectura de Software · 2026</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FAQ ================= -->
+        <section class="land-section" id="faq">
+            <div class="land-container">
+                <div class="section-head-row">
+                    <div>
+                        <p class="section-eyebrow">PREGUNTAS FRECUENTES</p>
+                        <h2 class="section-heading">Antes de entrar al curso.</h2>
+                    </div>
+                </div>
+
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false">
+                            <span>¿Qué voy a encontrar en cada unidad?</span>
+                            <span class="faq-question__icon"></span>
+                        </button>
+                        <div class="faq-answer-wrap">
+                            <div class="faq-answer-inner">
+                                <p class="faq-answer">Cada unidad reúne el contenido, las actividades y las evidencias correspondientes a sus semanas, organizadas en el mismo formato.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false">
+                            <span>¿Cómo está organizado el curso?</span>
+                            <span class="faq-question__icon"></span>
+                        </button>
+                        <div class="faq-answer-wrap">
+                            <div class="faq-answer-inner">
+                                <p class="faq-answer">En cuatro unidades de cuatro semanas cada una, dieciséis semanas en total: de los requerimientos a la evaluación de frameworks.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false">
+                            <span>¿Dónde reviso el detalle semana a semana?</span>
+                            <span class="faq-question__icon"></span>
+                        </button>
+                        <div class="faq-answer-wrap">
+                            <div class="faq-answer-inner">
+                                <p class="faq-answer">Dentro de cada unidad, ordenado por semana, con las imágenes y enlaces correspondientes a cada entrega.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question" aria-expanded="false">
+                            <span>¿Puedo contactar al autor del portafolio?</span>
+                            <span class="faq-question__icon"></span>
+                        </button>
+                        <div class="faq-answer-wrap">
+                            <div class="faq-answer-inner">
+                                <p class="faq-answer">Sí. Más abajo están el correo institucional y el teléfono para escribir directamente, o puedes ir a la página de contacto.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CONTACTO CTA ================= -->
+        <section class="contact-cta land-section" id="contacto">
+            <div class="land-container">
+                <p class="section-eyebrow" style="justify-content:center;">HABLEMOS</p>
+                <h2 class="section-heading">¿Hablamos?</h2>
+                <p class="section-lede">Para dudas sobre el curso o sobre este portafolio, estos son los canales directos.</p>
+
+                <div class="hero-actions">
+                    <a href="pages/contact.html" class="btn btn-primary btn-lg">Ir a contacto</a>
+                </div>
+
+                <div class="contact-chips">
+                    <a href="tel:+51927125942" class="contact-chip">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        +51 927 125 942
+                    </a>
+                    <a href="mailto:q03478j@upla.edu.pe" class="contact-chip">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        q03478j@upla.edu.pe
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= FOOTER ================= -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
                 <div class="footer-brand">
-                    <h3>CORONEL_GUEVARA</h3>
-                    <p>INGENIERIA Y SISTEMAS Y COMPUTACION</p>
+                    <h3>CORONEL_GUEVARA_2026</h3>
+                    <p>INGENIERÍA DE SISTEMAS Y COMPUTACIÓN</p>
                 </div>
-
                 <div class="footer-links">
                     <div class="footer-column">
                         <h4>Navegación</h4>
@@ -231,15 +399,12 @@
         </div>
     </footer>
 
-    <!-- ✅ SCRIPTS FIREBASE EN ORDEN CORRECTO -->
-    <script src="assets/js/firebase-config.js"></script>
-    <script src="assets/js/auth-firebase.js"></script>
-    <script src="assets/js/fileUpload-firebase.js"></script>
-    <script src="assets/js/chatbox.js"></script>
-    <script src="assets/js/progress.js"></script>
-    <script src="assets/js/notifications.js"></script>
-    <script src="assets/js/main.js"></script>
-    <script src="assets/js/background.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.25/dist/lenis.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js"></script>
+    <script src="assets/js/hero-scene.js" defer></script>
+    <script src="assets/js/landing.js"></script>
 </body>
+
 </html>
