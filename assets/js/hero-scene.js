@@ -25,7 +25,7 @@
     var MAX_LINK_DIST = isSmall ? 3.1 : 3.4;
     var LINKS_PER_NODE = 3;
 
-    import('https://cdn.jsdelivr.net/npm/three@0.182.0/build/three.module.js')
+    import('./vendor/three/three.module.min.js')
         .then(function (THREE) {
             try {
                 initScene(THREE);
