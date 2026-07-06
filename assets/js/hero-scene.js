@@ -25,6 +25,16 @@
     var MAX_LINK_DIST = isSmall ? 3.1 : 3.4;
     var LINKS_PER_NODE = 3;
 
+    var UNIT_DATA = [
+        { num: '01', title: 'Introducción y Requerimientos', weeks: 'Semanas 01–04', href: 'pages/unidad1.html' },
+        { num: '02', title: 'Patrones y Estilos Arquitectónicos', weeks: 'Semanas 05–08', href: 'pages/unidad2.html' },
+        { num: '03', title: 'Comunicación de Arquitecturas', weeks: 'Semanas 09–12', href: 'pages/unidad3.html' },
+        { num: '04', title: 'Frameworks y Evaluación', weeks: 'Semanas 13–16', href: 'pages/unidad4.html' }
+    ];
+    var HOTSPOT_POS = isSmall
+        ? [[-1.6, 3.0, 0.8], [-1.3, 0.6, -1.2], [1.3, -0.8, 1.4], [1.6, -3.0, -0.6]]
+        : [[-5.0, 1.6, 1.2], [-1.7, -1.1, -1.6], [1.8, 1.3, 1.8], [5.0, -1.4, -1.0]];
+
     import('./vendor/three/three.module.min.js')
         .then(function (THREE) {
             try {
@@ -142,6 +152,96 @@
         var lines = new THREE.LineSegments(lineGeo, lineMat);
         group.add(lines);
 
+        /* ---- Hotspots: 1 punto especial por unidad, con halo e interacción ---- */
+        var hotspotGeo = new THREE.SphereGeometry(0.15, 16, 16);
+        var haloGeo = new THREE.SphereGeometry(0.34, 16, 16);
+        var hotspots = UNIT_DATA.map(function (data, i) {
+            var mat = new THREE.MeshBasicMaterial({
+                color: 0xc8f04a, transparent: true, opacity: 1,
+                blending: THREE.AdditiveBlending, depthWrite: false
+            });
+            var mesh = new THREE.Mesh(hotspotGeo, mat);
+            mesh.position.fromArray(HOTSPOT_POS[i]);
+            mesh.userData = { data: data, scale: 1, targetScale: 1 };
+
+            var halo = new THREE.Mesh(haloGeo, new THREE.MeshBasicMaterial({
+                color: 0xc8f04a, transparent: true, opacity: 0.16,
+                blending: THREE.AdditiveBlending, depthWrite: false
+            }));
+            mesh.add(halo);
+
+            group.add(mesh);
+            return mesh;
+        });
+
+        var raycaster = new THREE.Raycaster();
+        var pointer = new THREE.Vector2(-10, -10);
+        var hovered = null;
+        var active = null;
+
+        var label = document.createElement('div');
+        label.className = 'hero-hotspot-label';
+        label.innerHTML =
+            '<span class="hero-hotspot-label__close" aria-hidden="true">&times;</span>' +
+            '<span class="hero-hotspot-label__num"></span>' +
+            '<span class="hero-hotspot-label__title"></span>' +
+            '<span class="hero-hotspot-label__weeks"></span>' +
+            '<a class="hero-hotspot-label__link" href="#">Ver unidad →</a>';
+        document.body.appendChild(label);
+        label.querySelector('.hero-hotspot-label__close').addEventListener('click', function () {
+            setActive(null);
+        });
+
+        function setPointerFromEvent(e) {
+            var rect = canvas.getBoundingClientRect();
+            pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        }
+
+        function pickHotspot() {
+            raycaster.setFromCamera(pointer, camera);
+            var hits = raycaster.intersectObjects(hotspots, false);
+            return hits.length ? hits[0].object : null;
+        }
+
+        function setActive(mesh) {
+            if (active && active !== mesh) active.userData.targetScale = (active === hovered ? 1.25 : 1);
+            active = mesh;
+            if (!mesh) {
+                label.classList.remove('is-visible');
+                return;
+            }
+            mesh.userData.targetScale = 1.4;
+            label.querySelector('.hero-hotspot-label__num').textContent = mesh.userData.data.num;
+            label.querySelector('.hero-hotspot-label__title').textContent = mesh.userData.data.title;
+            label.querySelector('.hero-hotspot-label__weeks').textContent = mesh.userData.data.weeks;
+            label.querySelector('.hero-hotspot-label__link').setAttribute('href', mesh.userData.data.href);
+            label.classList.add('is-visible');
+        }
+
+        canvas.addEventListener('mousemove', function (e) {
+            setPointerFromEvent(e);
+            var hit = pickHotspot();
+            if (hit !== hovered) {
+                if (hovered && hovered !== active) hovered.userData.targetScale = 1;
+                hovered = hit;
+                if (hovered && hovered !== active) hovered.userData.targetScale = 1.25;
+            }
+            canvas.style.cursor = hit ? 'pointer' : '';
+        });
+        canvas.addEventListener('mouseleave', function () {
+            if (hovered && hovered !== active) hovered.userData.targetScale = 1;
+            hovered = null;
+        });
+        canvas.addEventListener('click', function (e) {
+            setPointerFromEvent(e);
+            var hit = pickHotspot();
+            setActive(hit === active ? null : hit);
+        });
+        document.addEventListener('click', function (e) {
+            if (active && e.target !== canvas) setActive(null);
+        });
+
         /* ---- Resize ---- */
         function resize() {
             var w = mount.clientWidth || window.innerWidth;
@@ -168,6 +268,7 @@
         var isVisible = true;
         var io = new IntersectionObserver(function (entries) {
             isVisible = entries[0].isIntersecting;
+            if (!isVisible) setActive(null);
         }, { threshold: 0.01 });
         io.observe(mount);
         document.addEventListener('visibilitychange', function () {
@@ -177,6 +278,7 @@
         /* ---- Loop ---- */
         var clock = new THREE.Clock();
         var posArray = pointsGeo.attributes.position.array;
+        var worldPos = new THREE.Vector3();
 
         function animate() {
             requestAnimationFrame(animate);
@@ -196,7 +298,27 @@
             group.rotation.x = curRotX + Math.sin(t * 0.06) * 0.05;
             group.rotation.y = curRotY + t * 0.045;
 
+            hotspots.forEach(function (h, i) {
+                h.material.opacity = 0.85 + Math.sin(t * 1.6 + i * 1.3) * 0.15;
+                h.userData.scale += (h.userData.targetScale - h.userData.scale) * 0.15;
+                h.scale.setScalar(h.userData.scale);
+            });
+
             renderer.render(scene, camera);
+
+            if (active) {
+                active.getWorldPosition(worldPos);
+                var proj = worldPos.project(camera);
+                var rect = canvas.getBoundingClientRect();
+                var sx = (proj.x * 0.5 + 0.5) * rect.width + rect.left;
+                var sy = (-proj.y * 0.5 + 0.5) * rect.height + rect.top;
+                var margin = 12;
+                sx = Math.min(Math.max(sx + 22, margin), window.innerWidth - 220 - margin);
+                sy = Math.min(Math.max(sy - 10, margin), window.innerHeight - 130 - margin);
+                label.style.left = sx + 'px';
+                label.style.top = sy + 'px';
+                label.classList.toggle('is-behind', proj.z > 1);
+            }
         }
         animate();
     }

@@ -98,8 +98,20 @@
     }
 
     /* =====================================================
-       PRELOADER — independiente de GSAP, siempre termina
+       PRELOADER — palabra rotando en idiomas hasta terminar
+       en español. Independiente de GSAP, siempre termina.
        ===================================================== */
+    var PRELOADER_WORDS = [
+        'Software Architecture',
+        'Arquitetura de Software',
+        'Architecture Logicielle',
+        'Architettura Software',
+        'Softwarearchitektur',
+        'Softwarearchitectuur',
+        'Arhitectura Software',
+        'Arquitectura de Software'
+    ];
+
     function runPreloader(done) {
         var preloader = document.querySelector('.preloader');
         if (!preloader) { done(); return; }
@@ -111,17 +123,32 @@
             return;
         }
 
-        var countEl = preloader.querySelector('.preloader-count-value');
+        var wordEl = preloader.querySelector('.preloader-word-value');
         var barEl = preloader.querySelector('.preloader-bar i');
+        var STEP_MS = 130;
+        var HOLD_FINAL_MS = 650;
+        var totalMs = (PRELOADER_WORDS.length - 1) * STEP_MS + HOLD_FINAL_MS;
         var start = null;
-        var MIN_MS = 1000;
+        var lastIndex = -1;
 
         function tick(now) {
             if (start === null) start = now;
-            var progress = Math.min(1, (now - start) / MIN_MS);
-            var n = Math.round(progress * 100);
-            if (countEl) countEl.textContent = n;
-            if (barEl) barEl.style.width = n + '%';
+            var elapsed = now - start;
+            var progress = Math.min(1, elapsed / totalMs);
+            if (barEl) barEl.style.width = (progress * 100) + '%';
+
+            var stepIndex = Math.min(PRELOADER_WORDS.length - 1, Math.floor(elapsed / STEP_MS));
+            if (stepIndex !== lastIndex && wordEl) {
+                lastIndex = stepIndex;
+                var isFinal = stepIndex === PRELOADER_WORDS.length - 1;
+                wordEl.classList.add('is-out');
+                setTimeout(function () {
+                    wordEl.textContent = PRELOADER_WORDS[stepIndex];
+                    wordEl.classList.toggle('is-final', isFinal);
+                    wordEl.classList.remove('is-out');
+                }, 90);
+            }
+
             if (progress < 1) {
                 requestAnimationFrame(tick);
             } else {
@@ -129,7 +156,7 @@
                     preloader.classList.add('is-hidden');
                     document.body.classList.remove('preload-lock');
                     done();
-                }, 200);
+                }, 350);
             }
         }
         requestAnimationFrame(tick);
