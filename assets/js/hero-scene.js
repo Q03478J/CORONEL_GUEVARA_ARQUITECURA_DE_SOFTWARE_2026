@@ -26,14 +26,20 @@
     var LINKS_PER_NODE = 3;
 
     var UNIT_DATA = [
-        { num: '01', title: 'Introducción y Requerimientos', weeks: 'Semanas 01–04', href: 'pages/unidad1.html' },
-        { num: '02', title: 'Patrones y Estilos Arquitectónicos', weeks: 'Semanas 05–08', href: 'pages/unidad2.html' },
-        { num: '03', title: 'Comunicación de Arquitecturas', weeks: 'Semanas 09–12', href: 'pages/unidad3.html' },
-        { num: '04', title: 'Frameworks y Evaluación', weeks: 'Semanas 13–16', href: 'pages/unidad4.html' }
+        { num: '01', title: 'Introducción y Requerimientos', startWeek: 1, href: 'pages/unidad1.html' },
+        { num: '02', title: 'Patrones y Estilos Arquitectónicos', startWeek: 5, href: 'pages/unidad2.html' },
+        { num: '03', title: 'Comunicación de Arquitecturas', startWeek: 9, href: 'pages/unidad3.html' },
+        { num: '04', title: 'Frameworks y Evaluación', startWeek: 13, href: 'pages/unidad4.html' }
     ];
-    var HOTSPOT_POS = isSmall
+    var GEM_POS = isSmall
         ? [[-1.6, 3.0, 0.8], [-1.3, 0.6, -1.2], [1.3, -0.8, 1.4], [1.6, -3.0, -0.6]]
         : [[-5.0, 1.6, 1.2], [-1.7, -1.1, -1.6], [1.8, 1.3, 1.8], [5.0, -1.4, -1.0]];
+    var TETRA_OFFSETS = [
+        [0.24, 0.24, 0.24],
+        [0.24, -0.24, -0.24],
+        [-0.24, 0.24, -0.24],
+        [-0.24, -0.24, 0.24]
+    ];
 
     import('./vendor/three/three.module.min.js')
         .then(function (THREE) {
@@ -152,26 +158,55 @@
         var lines = new THREE.LineSegments(lineGeo, lineMat);
         group.add(lines);
 
-        /* ---- Hotspots: 1 punto especial por unidad, con halo e interacción ---- */
-        var hotspotGeo = new THREE.SphereGeometry(0.15, 16, 16);
-        var haloGeo = new THREE.SphereGeometry(0.34, 16, 16);
-        var hotspots = UNIT_DATA.map(function (data, i) {
-            var mat = new THREE.MeshBasicMaterial({
-                color: 0xc8f04a, transparent: true, opacity: 1,
-                blending: THREE.AdditiveBlending, depthWrite: false
-            });
-            var mesh = new THREE.Mesh(hotspotGeo, mat);
-            mesh.position.fromArray(HOTSPOT_POS[i]);
-            mesh.userData = { data: data, scale: 1, targetScale: 1 };
+        /* ---- Gemas: 1 por unidad. Cada gema = 1 cristal + 4 puntos (semanas) ---- */
+        var gemGeo = new THREE.IcosahedronGeometry(0.3, 0);
+        var weekGeo = new THREE.SphereGeometry(0.09, 14, 14);
+        var weekHaloGeo = new THREE.SphereGeometry(0.2, 14, 14);
 
-            var halo = new THREE.Mesh(haloGeo, new THREE.MeshBasicMaterial({
-                color: 0xc8f04a, transparent: true, opacity: 0.16,
+        var gems = [];
+        var weekPoints = [];
+
+        UNIT_DATA.forEach(function (unit, gi) {
+            var gemGroup = new THREE.Group();
+            gemGroup.position.fromArray(GEM_POS[gi]);
+            gemGroup.userData = { spin: 0.5 + Math.random() * 0.4 };
+
+            var fillMesh = new THREE.Mesh(gemGeo, new THREE.MeshBasicMaterial({
+                color: 0x6ffcc0, transparent: true, opacity: 0.08,
                 blending: THREE.AdditiveBlending, depthWrite: false
             }));
-            mesh.add(halo);
+            var wireMesh = new THREE.Mesh(gemGeo, new THREE.MeshBasicMaterial({
+                color: 0xc8f04a, wireframe: true, transparent: true, opacity: 0.32,
+                blending: THREE.AdditiveBlending, depthWrite: false
+            }));
+            gemGroup.add(fillMesh, wireMesh);
 
-            group.add(mesh);
-            return mesh;
+            for (var j = 0; j < 4; j++) {
+                var mesh = new THREE.Mesh(weekGeo, new THREE.MeshBasicMaterial({
+                    color: 0xc8f04a, transparent: true, opacity: 1,
+                    blending: THREE.AdditiveBlending, depthWrite: false
+                }));
+                mesh.position.fromArray(TETRA_OFFSETS[j]);
+                mesh.userData = {
+                    scale: 1, targetScale: 1,
+                    data: {
+                        week: unit.startWeek + j,
+                        unitNum: unit.num,
+                        unitTitle: unit.title,
+                        href: unit.href
+                    }
+                };
+                var halo = new THREE.Mesh(weekHaloGeo, new THREE.MeshBasicMaterial({
+                    color: 0xc8f04a, transparent: true, opacity: 0.16,
+                    blending: THREE.AdditiveBlending, depthWrite: false
+                }));
+                mesh.add(halo);
+                gemGroup.add(mesh);
+                weekPoints.push(mesh);
+            }
+
+            group.add(gemGroup);
+            gems.push(gemGroup);
         });
 
         var raycaster = new THREE.Raycaster();
@@ -184,8 +219,8 @@
         label.innerHTML =
             '<span class="hero-hotspot-label__close" aria-hidden="true">&times;</span>' +
             '<span class="hero-hotspot-label__num"></span>' +
-            '<span class="hero-hotspot-label__title"></span>' +
             '<span class="hero-hotspot-label__weeks"></span>' +
+            '<span class="hero-hotspot-label__title"></span>' +
             '<a class="hero-hotspot-label__link" href="#">Ver unidad →</a>';
         document.body.appendChild(label);
         label.querySelector('.hero-hotspot-label__close').addEventListener('click', function () {
@@ -200,9 +235,11 @@
 
         function pickHotspot() {
             raycaster.setFromCamera(pointer, camera);
-            var hits = raycaster.intersectObjects(hotspots, false);
+            var hits = raycaster.intersectObjects(weekPoints, false);
             return hits.length ? hits[0].object : null;
         }
+
+        function pad2(n) { return n < 10 ? '0' + n : '' + n; }
 
         function setActive(mesh) {
             if (active && active !== mesh) active.userData.targetScale = (active === hovered ? 1.25 : 1);
@@ -211,11 +248,12 @@
                 label.classList.remove('is-visible');
                 return;
             }
-            mesh.userData.targetScale = 1.4;
-            label.querySelector('.hero-hotspot-label__num').textContent = mesh.userData.data.num;
-            label.querySelector('.hero-hotspot-label__title').textContent = mesh.userData.data.title;
-            label.querySelector('.hero-hotspot-label__weeks').textContent = mesh.userData.data.weeks;
-            label.querySelector('.hero-hotspot-label__link').setAttribute('href', mesh.userData.data.href);
+            mesh.userData.targetScale = 1.5;
+            var d = mesh.userData.data;
+            label.querySelector('.hero-hotspot-label__num').textContent = pad2(d.week);
+            label.querySelector('.hero-hotspot-label__weeks').textContent = 'Semana ' + pad2(d.week) + ' · Unidad ' + d.unitNum;
+            label.querySelector('.hero-hotspot-label__title').textContent = d.unitTitle;
+            label.querySelector('.hero-hotspot-label__link').setAttribute('href', d.href);
             label.classList.add('is-visible');
         }
 
@@ -298,10 +336,15 @@
             group.rotation.x = curRotX + Math.sin(t * 0.06) * 0.05;
             group.rotation.y = curRotY + t * 0.045;
 
-            hotspots.forEach(function (h, i) {
+            weekPoints.forEach(function (h, i) {
                 h.material.opacity = 0.85 + Math.sin(t * 1.6 + i * 1.3) * 0.15;
                 h.userData.scale += (h.userData.targetScale - h.userData.scale) * 0.15;
                 h.scale.setScalar(h.userData.scale);
+            });
+
+            gems.forEach(function (g) {
+                g.rotation.x += g.userData.spin * 0.006;
+                g.rotation.y += g.userData.spin * 0.009;
             });
 
             renderer.render(scene, camera);
