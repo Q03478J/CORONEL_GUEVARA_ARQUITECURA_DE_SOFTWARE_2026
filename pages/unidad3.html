@@ -23,6 +23,76 @@
     <link rel="stylesheet" href="../assets/css/fileViewer.css">
     <link rel="stylesheet" href="../assets/css/trophy.css">
 
+    <!-- Lightbox (visor de imágenes) -->
+    <style>
+        .ref-image { cursor: zoom-in; transition: filter 0.2s ease; }
+        .ref-image:hover { filter: brightness(0.9); }
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 15, 0.92);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: var(--spacing-xl);
+        }
+        .lightbox-overlay.active { display: flex; }
+        .lightbox-image {
+            max-width: 92vw;
+            max-height: 78vh;
+            border-radius: var(--border-radius-md);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            background: #fff;
+        }
+        .lightbox-caption {
+            color: #fff;
+            margin-top: var(--spacing-md);
+            font-size: 0.9rem;
+            opacity: 0.85;
+            text-align: center;
+        }
+        .lightbox-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+        .lightbox-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--color-primary);
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: var(--border-radius-sm);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 18px;
+            right: 26px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 2.4rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .pdf-viewer-frame {
+            width: 100%;
+            height: 560px;
+            border: none;
+            display: block;
+            background: #f4f4f4;
+        }
+        @media (max-width: 640px) {
+            .pdf-viewer-frame { height: 380px; }
+        }
+    </style>
+
     <!-- ✅ FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
@@ -134,7 +204,7 @@
 
                         <!-- Imagen 1 -->
                         <div style="border: 1px solid var(--color-border); border-radius: var(--border-radius-md); overflow: hidden; background: var(--color-surface);">
-                            <img src="../assets/images/semana9_imagen1.png" alt="Fundamentos de comunicación 1" style="width: 100%; height: 160px; object-fit: cover; display: block;">
+                            <img src="../assets/images/semana9_imagen1.png" alt="Fundamentos de comunicación 1" class="ref-image" style="width: 100%; height: 160px; object-fit: cover; display: block;" onclick="openLightbox('../assets/images/semana9_imagen1.png', 'Fundamentos de comunicación 1', 'semana9_imagen1.png')">
                             <div style="padding: var(--spacing-sm) var(--spacing-md);">
                                 <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Fundamentos de comunicación 1</p>
                                 <a href="../assets/images/semana9_imagen1.png" download="semana9_imagen1.png" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
@@ -146,7 +216,7 @@
 
                         <!-- Imagen 2 -->
                         <div style="border: 1px solid var(--color-border); border-radius: var(--border-radius-md); overflow: hidden; background: var(--color-surface);">
-                            <img src="../assets/images/semana9_imagen2.png" alt="Fundamentos de comunicación 2" style="width: 100%; height: 160px; object-fit: cover; display: block;">
+                            <img src="../assets/images/semana9_imagen2.png" alt="Fundamentos de comunicación 2" class="ref-image" style="width: 100%; height: 160px; object-fit: cover; display: block;" onclick="openLightbox('../assets/images/semana9_imagen2.png', 'Fundamentos de comunicación 2', 'semana9_imagen2.png')">
                             <div style="padding: var(--spacing-sm) var(--spacing-md);">
                                 <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Fundamentos de comunicación 2</p>
                                 <a href="../assets/images/semana9_imagen2.png" download="semana9_imagen2.png" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
@@ -158,7 +228,7 @@
 
                         <!-- Imagen 3 -->
                         <div style="border: 1px solid var(--color-border); border-radius: var(--border-radius-md); overflow: hidden; background: var(--color-surface);">
-                            <img src="../assets/images/semana9_imagen3.png" alt="Fundamentos de comunicación 3" style="width: 100%; height: 160px; object-fit: cover; display: block;">
+                            <img src="../assets/images/semana9_imagen3.png" alt="Fundamentos de comunicación 3" class="ref-image" style="width: 100%; height: 160px; object-fit: cover; display: block;" onclick="openLightbox('../assets/images/semana9_imagen3.png', 'Fundamentos de comunicación 3', 'semana9_imagen3.png')">
                             <div style="padding: var(--spacing-sm) var(--spacing-md);">
                                 <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Fundamentos de comunicación 3</p>
                                 <a href="../assets/images/semana9_imagen3.png" download="semana9_imagen3.png" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
@@ -170,7 +240,7 @@
 
                         <!-- Imagen 4 -->
                         <div style="border: 1px solid var(--color-border); border-radius: var(--border-radius-md); overflow: hidden; background: var(--color-surface);">
-                            <img src="../assets/images/semana9_imagen4.png" alt="Fundamentos de comunicación 4" style="width: 100%; height: 160px; object-fit: cover; display: block;">
+                            <img src="../assets/images/semana9_imagen4.png" alt="Fundamentos de comunicación 4" class="ref-image" style="width: 100%; height: 160px; object-fit: cover; display: block;" onclick="openLightbox('../assets/images/semana9_imagen4.png', 'Fundamentos de comunicación 4', 'semana9_imagen4.png')">
                             <div style="padding: var(--spacing-sm) var(--spacing-md);">
                                 <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Fundamentos de comunicación 4</p>
                                 <a href="../assets/images/semana9_imagen4.png" download="semana9_imagen4.png" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
@@ -216,8 +286,10 @@
                             <img 
                                 src="../assets/images/semana10_imagen1.png" 
                                 alt="Diagrama de comunicación distribuida 1"
+                                class="ref-image"
                                 style="width: 100%; height: 160px; object-fit: cover; display: block;"
                                 onerror="this. style.background='var(--color-primary-light)'; this.style.height='160px'; this.alt='Imagen 1';"
+                                onclick="openLightbox('../assets/images/semana10_imagen1.png', 'Diagrama de comunicación distribuida 1', 'semana10_imagen1.png')"
                             >
                             <div style="padding: var(--spacing-sm) var(--spacing-md);">
                                 <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Diagrama de comunicación 1</p>
@@ -239,8 +311,10 @@
                             <img 
                                 src="../assets/images/semana10_imagen2.png" 
                                 alt="Diagrama de comunicación distribuida 2"
+                                class="ref-image"
                                 style="width: 100%; height: 160px; object-fit: cover; display: block;"
                                 onerror="this. style.background='var(--color-primary-light)'; this.style.height='160px'; this.alt='Imagen 2';"
+                                onclick="openLightbox('../assets/images/semana10_imagen2.png', 'Diagrama de comunicación distribuida 2', 'semana10_imagen2.png')"
                             >
                             <div style="padding: var(--spacing-sm) var(--spacing-md);">
                                 <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Diagrama de comunicación 2</p>
@@ -284,10 +358,32 @@
                         <li>Producto: repositorio con servicios integrados</li>
                     </ul>
 
+                    <h4 style="margin-top: var(--spacing-lg);">Informe de la semana:</h4>
+                    <div style="border: 1px solid var(--color-border); border-radius: var(--border-radius-md); overflow: hidden; background: var(--color-surface); margin-top: var(--spacing-md);">
+                        <iframe
+                            src="../assets/docs/semana11_informe.pdf"
+                            class="pdf-viewer-frame"
+                            title="Informe - Sistema de Certificados de Talleres Técnicos"
+                        ></iframe>
+                        <div style="padding: var(--spacing-sm) var(--spacing-md); display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-md); flex-wrap: wrap;">
+                            <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin: 0;">Sistema de Control y Seguimiento de Trámite de Certificados de Talleres Técnicos — EPISC</p>
+                            <div style="display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                                <a href="../assets/docs/semana11_informe.pdf" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-surface); color: var(--color-primary); border: 1px solid var(--color-primary); padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                    Abrir en pestaña nueva
+                                </a>
+                                <a href="../assets/docs/semana11_informe.pdf" download="Informe_Semana11_Certificados_Talleres.pdf" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3"/></svg>
+                                    Descargar PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                     <h4 style="margin-top: var(--spacing-lg);">Imágenes de referencia:</h4>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-md); margin-top: var(--spacing-md);">
                         <div style="border: 1px solid var(--color-border); border-radius: var(--border-radius-md); overflow: hidden; background: var(--color-surface);">
-                            <img src="../assets/images/semana11_imagen1.png" alt="Implementación de comunicación entre servicios" style="width: 100%; height: 160px; object-fit: cover; display: block;">
+                            <img src="../assets/images/semana11_imagen1.png" alt="Implementación de comunicación entre servicios" class="ref-image" style="width: 100%; height: 160px; object-fit: cover; display: block;" onclick="openLightbox('../assets/images/semana11_imagen1.png', 'Implementación de comunicación entre servicios', 'semana11_imagen1.png')">
                             <div style="padding: var(--spacing-sm) var(--spacing-md);">
                                 <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Implementación de comunicación</p>
                                 <a href="../assets/images/semana11_imagen1.png" download="semana11_imagen1.png" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
@@ -332,7 +428,7 @@
                     <h4 style="margin-top: var(--spacing-lg);">Imágenes de referencia:</h4>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--spacing-md); margin-top: var(--spacing-md);">
                         <div style="border: 1px solid var(--color-border); border-radius: var(--border-radius-md); overflow: hidden; background: var(--color-surface);">
-                            <img src="../assets/images/semana12_imagen1.png" alt="Evaluación de comunicación distribuida" style="width: 100%; height: 160px; object-fit: cover; display: block;">
+                            <img src="../assets/images/semana12_imagen1.png" alt="Evaluación de comunicación distribuida" class="ref-image" style="width: 100%; height: 160px; object-fit: cover; display: block;" onclick="openLightbox('../assets/images/semana12_imagen1.png', 'Evaluación de comunicación distribuida', 'semana12_imagen1.png')">
                             <div style="padding: var(--spacing-sm) var(--spacing-md);">
                                 <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Evaluación de comunicación</p>
                                 <a href="../assets/images/semana12_imagen1.png" download="semana12_imagen1.png" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
@@ -397,6 +493,42 @@
             </div>
         </div>
     </footer>
+
+    <!-- Lightbox Modal (visor de imágenes a pantalla completa) -->
+    <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox(event)">
+        <button class="lightbox-close" onclick="closeLightbox(event)" aria-label="Cerrar">&times;</button>
+        <img id="lightboxImg" class="lightbox-image" src="" alt="" onclick="event.stopPropagation()">
+        <p id="lightboxCaption" class="lightbox-caption"></p>
+        <div class="lightbox-actions" onclick="event.stopPropagation()">
+            <a id="lightboxDownload" class="lightbox-download" href="" download>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3"/></svg>
+                Descargar
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function openLightbox(src, caption, filename) {
+            const overlay = document.getElementById('imageLightbox');
+            const img = document.getElementById('lightboxImg');
+            const cap = document.getElementById('lightboxCaption');
+            const dl = document.getElementById('lightboxDownload');
+            img.src = src;
+            img.alt = caption || '';
+            cap.textContent = caption || '';
+            dl.href = src;
+            dl.setAttribute('download', filename || '');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeLightbox(e) {
+            document.getElementById('imageLightbox').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeLightbox();
+        });
+    </script>
 
     <script src="../assets/js/main.js"></script>
     <script src="../assets/js/progress.js"></script>
