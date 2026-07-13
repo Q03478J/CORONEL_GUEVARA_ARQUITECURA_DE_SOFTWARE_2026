@@ -29,10 +29,14 @@
         .ref-image:hover { filter: brightness(0.9); }
         .lightbox-overlay {
             display: none;
-            position: fixed;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
             inset: 0;
             background: rgba(10, 10, 15, 0.92);
-            z-index: 9999;
+            z-index: 2147483647 !important;
             align-items: center;
             justify-content: center;
             flex-direction: column;
@@ -495,7 +499,7 @@
     </footer>
 
     <!-- Lightbox Modal (visor de imágenes a pantalla completa) -->
-    <div id="imageLightbox" class="lightbox-overlay" onclick="closeLightbox(event)">
+    <div id="imageLightbox" class="lightbox-overlay" data-lenis-prevent onclick="closeLightbox(event)">
         <button class="lightbox-close" onclick="closeLightbox(event)" aria-label="Cerrar">&times;</button>
         <img id="lightboxImg" class="lightbox-image" src="" alt="" onclick="event.stopPropagation()">
         <p id="lightboxCaption" class="lightbox-caption"></p>
@@ -508,6 +512,15 @@
     </div>
 
     <script>
+        // Sacamos el lightbox de cualquier wrapper transformado por Lenis
+        // (position: fixed no funciona igual dentro de un contenedor con transform)
+        document.addEventListener('DOMContentLoaded', function () {
+            var overlay = document.getElementById('imageLightbox');
+            if (overlay && overlay.parentElement !== document.body) {
+                document.body.appendChild(overlay);
+            }
+        });
+
         function openLightbox(src, caption, filename) {
             const overlay = document.getElementById('imageLightbox');
             const img = document.getElementById('lightboxImg');
@@ -520,10 +533,21 @@
             dl.setAttribute('download', filename || '');
             overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            // Pausa Lenis si está activo (varios nombres posibles según el script que lo inicializa)
+            const lenisInstance = window.lenis || window.lenisInstance || window.__lenis;
+            if (lenisInstance && typeof lenisInstance.stop === 'function') {
+                lenisInstance.stop();
+            }
         }
         function closeLightbox(e) {
             document.getElementById('imageLightbox').classList.remove('active');
             document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            const lenisInstance = window.lenis || window.lenisInstance || window.__lenis;
+            if (lenisInstance && typeof lenisInstance.start === 'function') {
+                lenisInstance.start();
+            }
         }
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') closeLightbox();
