@@ -84,6 +84,78 @@
             line-height: 1;
             cursor: pointer;
         }
+
+        /* Visor de PDF */
+        .pdf-overlay {
+            display: none;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            inset: 0;
+            background: rgba(10, 10, 15, 0.92);
+            z-index: 2147483647 !important;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: var(--spacing-xl);
+        }
+        .pdf-overlay.active { display: flex; }
+        .pdf-modal {
+            width: min(900px, 92vw);
+            height: 85vh;
+            background: #fff;
+            border-radius: var(--border-radius-md);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .pdf-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--color-surface, #f5f5f5);
+            border-bottom: 1px solid var(--color-border, #e0e0e0);
+        }
+        .pdf-modal-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--color-text, #111);
+        }
+        .pdf-modal-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        .pdf-modal-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--color-primary);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: var(--border-radius-sm);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.82rem;
+        }
+        .pdf-modal-close {
+            background: none;
+            border: none;
+            color: var(--color-text, #111);
+            font-size: 1.8rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 4px;
+        }
+        .pdf-modal iframe {
+            flex: 1;
+            border: none;
+            width: 100%;
+        }
     </style>
 
     <!-- ✅ FIREBASE SDK -->
@@ -326,10 +398,16 @@
                             <div style="flex: 1;">
                                 <p style="font-weight: 600; margin-bottom: 2px;">Informe Final</p>
                                 <p style="font-size: 0.82rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Arquitectura del sistema (PDF)</p>
-                                <a href="../assets/docs/INFORMEFINAL.pdf" download="INFORMEFINAL.pdf" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3"/></svg>
-                                    Descargar
-                                </a>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <button onclick="openPdfPreview('../assets/docs/INFORMEFINAL.pdf', 'Informe Final')" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-surface); color: var(--color-primary); border: 1px solid var(--color-primary); padding: 6px 14px; border-radius: var(--border-radius-sm); font-size: 0.82rem; font-weight: 500; cursor: pointer;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        Previsualizar
+                                    </button>
+                                    <a href="../assets/docs/INFORMEFINAL.pdf" download="INFORMEFINAL.pdf" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3"/></svg>
+                                        Descargar
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         <div style="border: 1px solid var(--color-border); border-radius: var(--border-radius-md); padding: var(--spacing-md); background: var(--color-surface); display: flex; align-items: center; gap: var(--spacing-md);">
@@ -337,10 +415,16 @@
                             <div style="flex: 1;">
                                 <p style="font-weight: 600; margin-bottom: 2px;">Informe Spring Boot</p>
                                 <p style="font-size: 0.82rem; color: var(--color-text-secondary); margin-bottom: var(--spacing-sm);">Implementación técnica (PDF)</p>
-                                <a href="../assets/docs/INFORMESPRITBOOT.pdf" download="INFORMESPRITBOOT.pdf" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3"/></svg>
-                                    Descargar
-                                </a>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <button onclick="openPdfPreview('../assets/docs/INFORMESPRITBOOT.pdf', 'Informe Spring Boot')" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-surface); color: var(--color-primary); border: 1px solid var(--color-primary); padding: 6px 14px; border-radius: var(--border-radius-sm); font-size: 0.82rem; font-weight: 500; cursor: pointer;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        Previsualizar
+                                    </button>
+                                    <a href="../assets/docs/INFORMESPRITBOOT.pdf" download="INFORMESPRITBOOT.pdf" style="display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); color: white; padding: 6px 14px; border-radius: var(--border-radius-sm); text-decoration: none; font-size: 0.82rem; font-weight: 500;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3"/></svg>
+                                        Descargar
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -414,6 +498,23 @@
         </div>
     </div>
 
+    <!-- Modal de previsualización de PDF -->
+    <div id="pdfViewer" class="pdf-overlay" data-lenis-prevent onclick="closePdfPreview(event)">
+        <div class="pdf-modal" onclick="event.stopPropagation()">
+            <div class="pdf-modal-header">
+                <span id="pdfModalTitle" class="pdf-modal-title"></span>
+                <div class="pdf-modal-actions">
+                    <a id="pdfModalDownload" class="pdf-modal-download" href="" download>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M7 10L12 15M12 15L17 10M12 15V3"/></svg>
+                        Descargar
+                    </a>
+                    <button class="pdf-modal-close" onclick="closePdfPreview(event)" aria-label="Cerrar">&times;</button>
+                </div>
+            </div>
+            <iframe id="pdfModalFrame" src="" title="Previsualización de PDF"></iframe>
+        </div>
+    </div>
+
     <script>
         // Sacamos el lightbox de cualquier wrapper transformado por Lenis
         // (position: fixed no funciona igual dentro de un contenedor con transform)
@@ -422,7 +523,40 @@
             if (overlay && overlay.parentElement !== document.body) {
                 document.body.appendChild(overlay);
             }
+            var pdfOverlay = document.getElementById('pdfViewer');
+            if (pdfOverlay && pdfOverlay.parentElement !== document.body) {
+                document.body.appendChild(pdfOverlay);
+            }
         });
+
+        function openPdfPreview(src, title) {
+            const overlay = document.getElementById('pdfViewer');
+            const frame = document.getElementById('pdfModalFrame');
+            const titleEl = document.getElementById('pdfModalTitle');
+            const dl = document.getElementById('pdfModalDownload');
+            frame.src = src;
+            titleEl.textContent = title || '';
+            dl.href = src;
+            dl.setAttribute('download', (title || 'documento') + '.pdf');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            const lenisInstance = window.lenis || window.lenisInstance || window.__lenis;
+            if (lenisInstance && typeof lenisInstance.stop === 'function') {
+                lenisInstance.stop();
+            }
+        }
+        function closePdfPreview(e) {
+            const overlay = document.getElementById('pdfViewer');
+            overlay.classList.remove('active');
+            document.getElementById('pdfModalFrame').src = '';
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            const lenisInstance = window.lenis || window.lenisInstance || window.__lenis;
+            if (lenisInstance && typeof lenisInstance.start === 'function') {
+                lenisInstance.start();
+            }
+        }
 
         function openLightbox(src, caption, filename) {
             const overlay = document.getElementById('imageLightbox');
@@ -452,7 +586,10 @@
             }
         }
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'Escape') {
+                closeLightbox();
+                closePdfPreview();
+            }
         });
     </script>
 
